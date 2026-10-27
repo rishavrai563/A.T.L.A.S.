@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../App'
-import { calculateMetrics, generateEquityCurve } from '../data/sampleData'
+import { calculateMetrics, generateEquityCurve, defaultParameterSchema } from '../data/sampleData'
 import { fetchStrategy } from '../api/strategies'
 import Sparkline from '../components/Sparkline'
 import DocTooltip from '../components/DocTooltip'
@@ -15,20 +15,12 @@ export default function Explore() {
   // Load dynamic schema
   useEffect(() => {
     if (!activeStrategyId) {
-      setSchema([
-        { key: 'rsiPeriod', label: 'RSI Period', min: 5, max: 50, step: 1, docKey: 'rsiPeriod' },
-        { key: 'buyThreshold', label: 'Oversold Threshold', min: 10, max: 45, step: 1, docKey: 'buyThreshold' },
-        { key: 'sellThreshold', label: 'Overbought Threshold', min: 55, max: 90, step: 1, docKey: 'sellThreshold' },
-        { key: 'stopLoss', label: 'Stop Loss (%)', min: 1, max: 20, step: 1, docKey: 'stopLoss' },
-        { key: 'takeProfit', label: 'Take Profit (%)', min: 5, max: 50, step: 1, docKey: 'takeProfit' },
-      ])
+      setSchema(defaultParameterSchema)
       return
     }
     fetchStrategy(activeStrategyId)
-      .then(s => {
-        if (s.parametersSchema?.length > 0) setSchema(s.parametersSchema)
-      })
-      .catch(() => {})
+      .then(s => setSchema(s.parametersSchema?.length > 0 ? s.parametersSchema : defaultParameterSchema))
+      .catch(() => setSchema(defaultParameterSchema))
   }, [activeStrategyId])
 
   const metrics = useMemo(() => {
@@ -93,6 +85,7 @@ export default function Explore() {
                 step={param.step || 1}
                 value={draft[param.key] ?? param.min}
                 onChange={(e) => change(param.key, e.target.value)}
+                aria-label={param.label}
               />
             </label>
           ))}
@@ -121,7 +114,7 @@ export default function Explore() {
               <strong>{metrics.trades}</strong>
             </div>
           </div>
-          <Sparkline data={curve} />
+          <Sparkline data={curve} height={240} ariaLabel="Estimated equity curve" />
         </section>
       </div>
       <div className="panel compare-preview">

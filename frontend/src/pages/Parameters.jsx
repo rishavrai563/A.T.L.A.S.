@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../App'
 import { fetchStrategy } from '../api/strategies'
 import DocTooltip from '../components/DocTooltip'
+import { defaultParameterSchema } from '../data/sampleData'
 
 export default function Parameters() {
   const navigate = useNavigate()
@@ -15,23 +16,16 @@ export default function Parameters() {
   useEffect(() => {
     if (!activeStrategyId) {
       // Fallback schema for legacy flow
-      setSchema([
-        { key: 'rsiPeriod', label: 'RSI Period', min: 5, max: 50, step: 1, docKey: 'rsiPeriod' },
-        { key: 'buyThreshold', label: 'Oversold Threshold', min: 10, max: 45, step: 1, docKey: 'buyThreshold' },
-        { key: 'sellThreshold', label: 'Overbought Threshold', min: 55, max: 90, step: 1, docKey: 'sellThreshold' },
-        { key: 'stopLoss', label: 'Stop Loss (%)', min: 1, max: 20, step: 1, docKey: 'stopLoss' },
-        { key: 'takeProfit', label: 'Take Profit (%)', min: 5, max: 50, step: 1, docKey: 'takeProfit' },
-      ])
+      setSchema(defaultParameterSchema)
       return
     }
 
     fetchStrategy(activeStrategyId)
-      .then(s => {
-        if (s.parametersSchema && s.parametersSchema.length > 0) {
-          setSchema(s.parametersSchema)
-        }
+      .then(s => setSchema(s.parametersSchema?.length > 0 ? s.parametersSchema : defaultParameterSchema))
+      .catch(err => {
+        console.warn('Failed to load strategy schema:', err)
+        setSchema(defaultParameterSchema)
       })
-      .catch(err => console.warn('Failed to load strategy schema:', err))
   }, [activeStrategyId])
 
   // Build compiled rules display from the schema

@@ -23,9 +23,9 @@ class ResultsErrorBoundary extends Component {
       return (
         <div className="page-stack">
           <div className="panel" style={{ padding: '40px' }}>
-            <h2 style={{ color: '#b91c1c' }}>Rendering Error</h2>
+            <h2 className="error-title">Rendering Error</h2>
             <p>The results page crashed while rendering. This usually means the backend returned data in an unexpected format.</p>
-            <pre style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', overflowX: 'auto', fontSize: '12px', border: '1px solid #fca5a5', whiteSpace: 'pre-wrap' }}>
+            <pre className="error-pre">
               {this.state.error?.toString()}
             </pre>
             <button className="button primary" onClick={() => window.location.href = '/strategy'} style={{ marginTop: '16px' }}>
@@ -57,14 +57,14 @@ function BacktestResultsInner() {
         </div>
         <div className="panel">
           <div className="section-title"><h2>Error Details</h2></div>
-          <p style={{ color: '#b91c1c', fontWeight: 'bold' }}>LEAN Engine encountered an error:</p>
-          <pre style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', overflowX: 'auto', fontSize: '12px', border: '1px solid #fca5a5', whiteSpace: 'pre-wrap' }}>
+          <p className="error-lead">LEAN Engine encountered an error:</p>
+          <pre className="error-pre">
             {backtestError}
           </pre>
           {backtestResults?.leanLogs && (
             <>
               <h3 style={{ marginTop: '20px' }}>Full LEAN Logs</h3>
-              <pre style={{ background: '#1e1e1e', color: '#d4d4d4', padding: '16px', borderRadius: '8px', overflowX: 'auto', fontSize: '11px', height: '300px', overflowY: 'auto' }}>
+              <pre className="log-pre">
                 {backtestResults.leanLogs}
               </pre>
             </>
@@ -125,11 +125,11 @@ function BacktestResultsInner() {
           <div className="eyebrow">Step 3 of 3</div>
           <h1>Backtest Results</h1>
           <p>{strategy?.name || 'Strategy'} · {strategy?.asset || 'Asset'} · {strategy?.startDate || '?'} to {strategy?.endDate || '?'}</p>
-          <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="param-chips">
             {Object.entries(strategy || {})
               .filter(([k]) => !['name', 'asset', 'timeframe', 'startDate', 'endDate'].includes(k))
               .map(([k, v]) => (
-                <span key={k} style={{ fontSize: '11px', background: '#e2e8f0', color: '#475569', padding: '2px 8px', borderRadius: '12px', fontWeight: 500 }}>
+                <span key={k} className="param-chip">
                   {k}: {v}
                 </span>
             ))}
@@ -146,28 +146,28 @@ function BacktestResultsInner() {
         <MetricCard label="Final Equity" value={`₹${endEquity.toLocaleString()}`} />
       </div>
 
-      <section className="panel" style={{ position: 'relative' }}>
+      <section className="panel chart-panel">
         <div className="section-title">
           <div>
             <h2>Price & Trades</h2>
             <span className="muted">Click on a BUY or SELL marker on the chart to see trade details.</span>
           </div>
         </div>
-        
+
         {selectedTrade && (
-          <div style={{ position: 'absolute', top: '16px', right: '16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)', zIndex: 10, minWidth: '250px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <strong style={{ color: selectedTrade.direction === 'Buy' ? '#16a34a' : '#dc2626' }}>{selectedTrade.direction} Order #{selectedTrade.orderId}</strong>
-              <button onClick={() => setSelectedTrade(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>✕</button>
+          <div className={`trade-popover ${selectedTrade.direction === 'Buy' ? 'buy' : 'sell'}`} key={selectedTrade.orderId}>
+            <div className="trade-popover-head">
+              <strong className={selectedTrade.direction === 'Buy' ? 'buy-text' : 'sell-text'}>{selectedTrade.direction} Order #{selectedTrade.orderId}</strong>
+              <button className="icon-btn" onClick={() => setSelectedTrade(null)} aria-label="Close trade details">✕</button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '13px' }}>
-              <div style={{ color: '#64748b' }}>Date</div>
-              <div style={{ fontWeight: 500 }}>{new Date(selectedTrade.time).toLocaleString()}</div>
-              <div style={{ color: '#64748b' }}>Price</div>
-              <div style={{ fontWeight: 500 }}>₹{(selectedTrade.price || 0).toLocaleString()}</div>
-              <div style={{ color: '#64748b' }}>Quantity</div>
-              <div style={{ fontWeight: 500 }}>{selectedTrade.quantity}</div>
-            </div>
+            <dl className="trade-popover-grid">
+              <dt>Date</dt>
+              <dd>{new Date(selectedTrade.time).toLocaleString()}</dd>
+              <dt>Price</dt>
+              <dd>₹{(selectedTrade.price || 0).toLocaleString()}</dd>
+              <dt>Quantity</dt>
+              <dd>{selectedTrade.quantity}</dd>
+            </dl>
           </div>
         )}
 
@@ -186,7 +186,13 @@ function BacktestResultsInner() {
           </div>
         </div>
         {formattedCurve.length > 0 ? (
-           <Sparkline data={formattedCurve} benchmark={false} />
+           <Sparkline
+             data={formattedCurve}
+             height={260}
+             labels={['Portfolio value']}
+             ariaLabel="Equity curve"
+             formatValue={(v) => `₹${v.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+           />
         ) : (
            <p className="muted" style={{ padding: '40px', textAlign: 'center' }}>No equity data available.</p>
         )}
@@ -201,9 +207,15 @@ function BacktestResultsInner() {
             </div>
           </div>
           {drawdownCurve.length > 0 ? (
-             <div style={{ marginTop: '20px' }}>
-               <Sparkline data={drawdownCurve} benchmark={false} height={140} />
-             </div>
+             <Sparkline
+               data={drawdownCurve}
+               height={190}
+               tone="negative"
+               labels={['Drawdown']}
+               ariaLabel="Drawdown profile"
+               formatValue={(v) => `${v.toFixed(2)}%`}
+               formatTick={(v) => `${v.toFixed(0)}%`}
+             />
           ) : (
              <p className="muted" style={{ padding: '40px', textAlign: 'center' }}>No drawdown data available.</p>
           )}
@@ -214,7 +226,7 @@ function BacktestResultsInner() {
           <div className="mini-list">
             {tradeList.length === 0 && <p className="muted">No trades executed.</p>}
             {tradeList.slice(-5).reverse().map((t, idx) => (
-              <div className="mini-row" key={t.orderId || idx} style={{ cursor: 'pointer' }} onClick={() => { setSelectedTrade(t); window.scrollTo({ top: 150, behavior: 'smooth' }) }}>
+              <div className="mini-row" key={t.orderId || idx} style={{ cursor: 'pointer' }} tabIndex="0" role="button" onClick={() => { setSelectedTrade(t); window.scrollTo({ top: 150, behavior: 'smooth' }) }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTrade(t); window.scrollTo({ top: 150, behavior: 'smooth' }) } }}>
                 <span>{new Date(t.time).toLocaleDateString()}</span>
                 <strong className={t.direction === 'Buy' ? 'buy-text' : 'sell-text'}>{t.direction}</strong>
                 <span>₹{(t.price || 0).toLocaleString()}</span>
@@ -240,7 +252,7 @@ function BacktestResultsInner() {
               </thead>
               <tbody>
                 {tradeList.map((t, idx) => (
-                  <tr key={t.orderId || idx} onClick={() => { setSelectedTrade(t); window.scrollTo({ top: 150, behavior: 'smooth' }) }} style={{ cursor: 'pointer' }} className="hover-row">
+                  <tr key={t.orderId || idx} tabIndex="0" role="row" onClick={() => { setSelectedTrade(t); window.scrollTo({ top: 150, behavior: 'smooth' }) }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTrade(t); window.scrollTo({ top: 150, behavior: 'smooth' }) } }} style={{ cursor: 'pointer' }} className="hover-row">
                     <td>{t.orderId}</td>
                     <td>{new Date(t.time).toLocaleString()}</td>
                     <td><span className={t.direction === 'Buy' ? 'buy-text' : 'sell-text'}>{t.direction}</span></td>
@@ -260,12 +272,6 @@ function BacktestResultsInner() {
         <button className="button secondary" onClick={() => navigate('/parameters')}>← Change Parameters</button>
         <button className="button primary" onClick={() => navigate('/compare')}>Compare Strategies →</button>
       </div>
-
-      <style>{`
-        .hover-row:hover {
-          background-color: #f8fafc;
-        }
-      `}</style>
     </div>
   )
 }

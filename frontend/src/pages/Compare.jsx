@@ -89,7 +89,7 @@ export default function Compare() {
 
       {/* Dropdowns */}
       <div className="compare-select">
-        <select value={idxA} onChange={(e) => setIdxA(Number(e.target.value))}>
+        <select value={idxA} onChange={(e) => setIdxA(Number(e.target.value))} aria-label="Select first strategy to compare">
           {hasRuns ? (
             runHistory.map((run, i) => (
               <option key={run.id} value={i}>
@@ -101,7 +101,7 @@ export default function Compare() {
           )}
         </select>
         <span className="vs-badge">VS</span>
-        <select value={idxB} onChange={(e) => setIdxB(Number(e.target.value))}>
+        <select value={idxB} onChange={(e) => setIdxB(Number(e.target.value))} aria-label="Select second strategy to compare">
           {hasRuns ? (
             runHistory.map((run, i) => (
               <option key={run.id} value={i}>
@@ -205,24 +205,9 @@ export default function Compare() {
           <h2>Equity Comparison</h2>
           <span className="muted">{hasRuns ? 'Real equity curves from backtest runs' : 'Sample curves'}</span>
         </div>
+        {/* Both curves share one value axis so they can be compared directly */}
         <div className="dual-chart">
-          <Sparkline data={curveA} />
-          <svg viewBox="0 0 760 190" className="overlay-chart">
-            <polyline
-              points={curveB.map((d, i) => {
-                const minVal = Math.min(...curveB.map(p => p.value))
-                const maxVal = Math.max(...curveB.map(p => p.value))
-                const range = maxVal - minVal || 1
-                return `${i * (760 / (curveB.length - 1))},${190 - ((d.value - minVal) / range) * 160}`
-              }).join(' ')}
-              fill="none"
-              className="chart-benchmark"
-            />
-          </svg>
-        </div>
-        <div className="legend">
-          <span><i className="legend-line main" /> {labelA}</span>
-          <span><i className="legend-line bench" /> {labelB}</span>
+          <Sparkline data={curveA} compare={curveB} labels={[labelA, labelB]} height={260} ariaLabel="Equity comparison" />
         </div>
       </section>
 
@@ -230,15 +215,6 @@ export default function Compare() {
         <button className="button secondary" onClick={() => navigate('/dashboard')}>Return to Dashboard</button>
         <button className="button primary" onClick={() => navigate('/strategy')}>Edit Strategy</button>
       </div>
-
-      <style>{`
-        .vs-badge {
-          font-weight: 800;
-          font-size: 16px;
-          color: #64748b;
-          padding: 0 8px;
-        }
-      `}</style>
     </div>
   )
 }

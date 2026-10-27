@@ -278,15 +278,17 @@ function BlockCard({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, i
     )
   }
 
-  const colors = {
-    indicator: { bg: '#eff6ff', border: '#93c5fd', icon: '📊', label: 'INDICATOR' },
-    condition: { bg: '#fefce8', border: '#fde047', icon: '⚡', label: 'CONDITION' },
-    action:    { bg: '#f0fdf4', border: '#86efac', icon: '🎯', label: 'ACTION' },
+  // Block colors come from the theme via `.vb-block.<type>` in index.css.
+  const kinds = {
+    indicator: { icon: '📊', label: 'INDICATOR' },
+    condition: { icon: '⚡', label: 'CONDITION' },
+    action:    { icon: '🎯', label: 'ACTION' },
   }
-  const style = colors[block.type] || colors.indicator
+  const kind = kinds[block.type] ? block.type : 'indicator'
+  const style = kinds[kind]
 
   return (
-    <div className="vb-block" style={{ background: style.bg, borderColor: style.border }}>
+    <div className={`vb-block ${kind}`}>
       <div className="vb-block-header">
         <span className="vb-block-icon">{style.icon}</span>
         <strong className="vb-block-label">{style.label}</strong>
@@ -402,7 +404,7 @@ export default function VisualBlocksEditor({ draft, draftCode, onCodeGenerated }
 
       {/* Toolbar */}
       <div className="vb-toolbar">
-        <span style={{ fontWeight: 600, fontSize: '13px', color: '#475569' }}>Add Block:</span>
+        <span className="vb-toolbar-label">Add Block:</span>
         <button className="vb-add-btn indicator" onClick={() => addBlock('indicator')}>📊 Indicator</button>
         <button className="vb-add-btn condition" onClick={() => addBlock('condition')}>⚡ Condition</button>
         <button className="vb-add-btn action" onClick={() => addBlock('action')}>🎯 Action</button>

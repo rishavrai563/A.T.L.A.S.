@@ -1,16 +1,12 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { profile, holdings, orders, strategies, portfolioHistory } from "./profileData";
+import { useApp } from "../../App";
+import { profile as defaultProfile, holdings as defaultHoldings, orders as defaultOrders, strategies, portfolioHistory } from "./profileData";
 import "./Profile.css";
 
 /* ------------------------------------------------------------------ *
  * Connecting real data
- * Replace the imports above with fetches to your C# backend, e.g.
- *   const [data, setData] = useState(null);
- *   useEffect(() => {
- *     fetch("http://localhost:5000/api/profile").then(r => r.json()).then(setData);
- *   }, []);
- * Keep the same shapes as profileData.js and the rest of this file works as-is.
+ * Uses logged in user from App context with fallback to profileData.js.
  * ------------------------------------------------------------------ */
 
 // Adjust these to match the routes in your App.jsx
@@ -36,7 +32,7 @@ const tone = (n) => (n >= 0 ? "gain" : "loss");
 const when = (iso) =>
   new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const day = (iso) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-const initials = (name) => name.split(" ").map((w) => w[0]).join("").slice(0, 2);
+const initials = (name) => (name || "User").split(" ").map((w) => w[0]).join("").slice(0, 2);
 
 function timeAgo(iso) {
   const mins = Math.round((Date.now() - new Date(iso)) / 60000);
@@ -72,7 +68,13 @@ function LineChart({ points }) {
       onPointerLeave={() => setHover(null)}
     >
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label="Portfolio value over time">
-        <path d={area} className="chart-area" />
+        <defs>
+          <linearGradient id="pf-area-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} className="chart-area" fill="url(#pf-area-grad)" />
         <path d={line} className="chart-line" vectorEffect="non-scaling-stroke" />
       </svg>
       {hp && (
@@ -107,15 +109,32 @@ function Sparkline({ values, positive }) {
 
 /* ---------- main page ---------- */
 export default function Profile() {
+  const { user } = useApp();
   const [tab, setTab] = useState("portfolio");
   const [range, setRange] = useState(90);
   const [sort, setSort] = useState({ key: "value", dir: "desc" });
   const [orderFilter, setOrderFilter] = useState("All");
 
+  const profile = useMemo(() => ({
+    name: user?.name || defaultProfile.name,
+    email: user?.email || defaultProfile.email,
+    clientId: user?.clientId || defaultProfile.clientId,
+    memberSince: user?.memberSince || defaultProfile.memberSince,
+    cash: user?.cash ?? defaultProfile.cash,
+  }), [user]);
+
+  const activeHoldings = useMemo(() => {
+    return (user?.holdings && user.holdings.length > 0) ? user.holdings : defaultHoldings;
+  }, [user]);
+
+  const activeOrders = useMemo(() => {
+    return (user?.orders && user.orders.length > 0) ? user.orders : defaultOrders;
+  }, [user]);
+
   // Derived numbers per holding
   const rows = useMemo(
     () =>
-      holdings.map((h) => {
+      activeHoldings.map((h) => {
         const invested = h.qty * h.avg;
         const value = h.qty * h.ltp;
         const pnl = value - invested;
@@ -129,7 +148,7 @@ export default function Profile() {
           dayPct: ((h.ltp - h.prevClose) / h.prevClose) * 100,
         };
       }),
-    []
+    [activeHoldings]
   );
 
   const totals = useMemo(() => {
@@ -158,7 +177,7 @@ export default function Profile() {
   const rangeChange = chartPoints[chartPoints.length - 1].v - chartPoints[0].v;
   const rangeChangePct = (rangeChange / chartPoints[0].v) * 100;
 
-  const filteredOrders = orders.filter((o) => orderFilter === "All" || o.status === orderFilter);
+  const filteredOrders = activeOrders.filter((o) => orderFilter === "All" || o.status === orderFilter);
 
   const ranked = [...rows].sort((a, b) => b.pnlPct - a.pnlPct);
   const winners = ranked.filter((r) => r.pnl > 0);

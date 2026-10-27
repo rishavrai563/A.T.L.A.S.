@@ -1,26 +1,19 @@
-/* ---------- tokens: light theme (default & explicit data-theme="light") ---------- */
-.profile,
-html[data-theme="light"] .profile {
-  --bg: #f5f7fb;
-  --surface: #ffffff;
-  --ink: #0f1b2d;
-  --muted: #667085;
-  --line: #e3e8ef;
-  --gain: #0a8f63;
-  --gain-soft: #e3f5ee;
-  --loss: #d92d4a;
-  --loss-soft: #fdebee;
-  --accent: #2563eb;
-  --warn: #9a6700;
-  --warn-soft: #fff4d6;
+/* ---------- tokens ----------
+   --surface, --muted, --gain(-soft), --loss(-soft), --accent, --warn(-soft)
+   and --bg come straight from the global design tokens in index.css, so the
+   profile follows the theme toggle. Only the profile-specific names are
+   aliased here. */
+.profile {
+  --ink: var(--text);
+  --line: var(--border);
 
   box-sizing: border-box;
   max-width: 1080px;
   margin: 0 auto;
   padding: 24px 20px 64px;
   color: var(--ink);
-  background: var(--bg);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: transparent;
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   line-height: 1.45;
 }
@@ -29,40 +22,6 @@ html[data-theme="light"] .profile {
 .profile *::before,
 .profile *::after {
   box-sizing: inherit;
-}
-
-/* ---------- tokens: dark theme (explicit data-theme="dark") ---------- */
-html[data-theme="dark"] .profile {
-  --bg: #0f172a;
-  --surface: #111827;
-  --ink: #e8edf4;
-  --muted: #8d99ab;
-  --line: #263040;
-  --gain: #36d19a;
-  --gain-soft: #123629;
-  --loss: #ff6f86;
-  --loss-soft: #3a1820;
-  --accent: #7d93ff;
-  --warn: #f0c24b;
-  --warn-soft: #3a2e0f;
-}
-
-/* ---------- tokens: system dark preference (fallback only if theme not set to light) ---------- */
-@media (prefers-color-scheme: dark) {
-  html:not([data-theme="light"]) .profile {
-    --bg: #0f172a;
-    --surface: #111827;
-    --ink: #e8edf4;
-    --muted: #8d99ab;
-    --line: #263040;
-    --gain: #36d19a;
-    --gain-soft: #123629;
-    --loss: #ff6f86;
-    --loss-soft: #3a1820;
-    --accent: #7d93ff;
-    --warn: #f0c24b;
-    --warn-soft: #3a2e0f;
-  }
 }
 
 .profile .gain {
@@ -142,7 +101,7 @@ html[data-theme="dark"] .profile {
 .profile .btn {
   padding: 9px 16px;
   border-radius: 8px;
-  background: var(--accent);
+  background: var(--accent-grad);
   color: #fff;
   text-decoration: none;
   font-weight: 600;
@@ -157,6 +116,7 @@ html[data-theme="dark"] .profile {
 .profile .pf-hero {
   background: var(--surface);
   border: 1px solid var(--line);
+  box-shadow: var(--shadow);
   border-radius: 14px;
   padding: 22px 22px 8px;
 }
@@ -208,9 +168,9 @@ html[data-theme="dark"] .profile {
   stroke-linejoin: round;
 }
 
+/* Fill comes from the SVG gradient in LineChart */
 .profile .chart-area {
-  fill: currentColor;
-  opacity: 0.08;
+  opacity: 1;
 }
 
 .profile .chart-cursor {

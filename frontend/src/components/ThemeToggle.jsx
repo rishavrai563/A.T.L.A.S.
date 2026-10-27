@@ -8,11 +8,8 @@ function getInitialTheme() {
   const saved = window.localStorage.getItem(STORAGE_KEY)
   if (saved === 'dark' || saved === 'light') return saved
 
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark'
-  }
-
-  return 'light'
+  // Dark is the brand default, matching the login experience.
+  return 'dark'
 }
 
 function applyTheme(theme) {

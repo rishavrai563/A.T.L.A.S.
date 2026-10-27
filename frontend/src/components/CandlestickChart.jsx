@@ -1,110 +1,123 @@
 import { useEffect, useRef } from 'react'
-import { createChart } from 'lightweight-charts'
+import { createChart, CrosshairMode, LineStyle } from 'lightweight-charts'
+import { observeTheme } from '../motion/motionPrefs'
+
+// lightweight-charts needs concrete colors, so resolve the CSS design tokens.
+function readTokens() {
+  const css = getComputedStyle(document.documentElement)
+  const token = (name) => css.getPropertyValue(name).trim()
+  return {
+    text: token('--muted'),
+    grid: token('--grid'),
+    border: token('--border-strong'),
+    gain: token('--gain'),
+    loss: token('--loss'),
+    label: token('--surface-solid'),
+    font: token('--font-sans'),
+  }
+}
+
+function chartOptions(t) {
+  return {
+    layout: {
+      background: { type: 'solid', color: 'transparent' },
+      textColor: t.text,
+      fontFamily: t.font,
+      fontSize: 11,
+    },
+    grid: {
+      vertLines: { visible: false },
+      horzLines: { color: t.grid, style: LineStyle.Dashed },
+    },
+    crosshair: {
+      mode: CrosshairMode.Normal,
+      vertLine: { color: t.border, style: LineStyle.Dashed, labelBackgroundColor: t.label },
+      horzLine: { color: t.border, style: LineStyle.Dashed, labelBackgroundColor: t.label },
+    },
+    rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.12, bottom: 0.08 } },
+    timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false },
+  }
+}
+
+function buildMarkers(trades, t) {
+  if (!trades?.length) return []
+  return trades.map((trade) => {
+    const isBuy = trade.direction === 'Buy'
+    return {
+      time: Math.floor(new Date(trade.time).getTime() / 1000),
+      position: isBuy ? 'belowBar' : 'aboveBar',
+      color: isBuy ? t.gain : t.loss,
+      shape: isBuy ? 'arrowUp' : 'arrowDown',
+      text: isBuy ? 'BUY' : 'SELL',
+      size: 1,
+      trade, // original trade for click handling
+    }
+  }).sort((a, b) => a.time - b.time)
+}
 
 export default function CandlestickChart({ data, trades, onTradeClick, height = 400 }) {
   const chartContainerRef = useRef()
-  const chartRef = useRef()
 
   useEffect(() => {
-    if (!chartContainerRef.current) return
+    const container = chartContainerRef.current
+    if (!container) return undefined
 
-    // Create Chart
-    const chart = createChart(chartContainerRef.current, {
-      layout: {
-        background: { type: 'solid', color: 'transparent' },
-        textColor: '#64748b',
-      },
-      grid: {
-        vertLines: { color: '#e2e8f0' },
-        horzLines: { color: '#e2e8f0' },
-      },
-      width: chartContainerRef.current.clientWidth,
-      height: height,
-      timeScale: {
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      rightPriceScale: {
-        borderColor: '#cbd5e1',
-      },
-    })
-    
-    chartRef.current = chart
+    let tokens = readTokens()
+    const chart = createChart(container, { ...chartOptions(tokens), width: container.clientWidth, height })
 
-    // Add Candlestick Series
     const candleSeries = chart.addCandlestickSeries({
-      upColor: '#22c55e',
-      downColor: '#ef4444',
+      upColor: tokens.gain,
+      downColor: tokens.loss,
+      wickUpColor: tokens.gain,
+      wickDownColor: tokens.loss,
       borderVisible: false,
-      wickUpColor: '#22c55e',
-      wickDownColor: '#ef4444',
+      priceLineVisible: false,
     })
 
     // Remove duplicates from data and sort
     const uniqueData = data
       .filter((v, i, a) => a.findIndex(t => t.time === v.time) === i)
       .sort((a, b) => a.time - b.time)
-
     candleSeries.setData(uniqueData)
 
-    // Add Trade Markers
-    let markers = []
-    if (trades && trades.length > 0) {
-      markers = trades.map(trade => {
-        const isBuy = trade.direction === 'Buy'
-        const time = Math.floor(new Date(trade.time).getTime() / 1000)
-        
-        return {
-          time: time,
-          position: isBuy ? 'belowBar' : 'aboveBar',
-          color: isBuy ? '#22c55e' : '#ef4444', // Green for BUY, Red for SELL
-          shape: isBuy ? 'arrowUp' : 'arrowDown',
-          text: `${isBuy ? 'BUY' : 'SELL'}`,
-          size: 2,
-          trade: trade // Attach original trade for click handling
-        }
-      })
-      
-      markers.sort((a, b) => a.time - b.time)
-      
+    let markers = buildMarkers(trades, tokens)
+    const applyMarkers = () => {
       try {
         candleSeries.setMarkers(markers)
       } catch (e) {
-        console.warn("Could not set all markers, some times may be outside data range or duplicated:", e)
+        console.warn('Could not set all markers, some times may be outside data range or duplicated:', e)
       }
     }
+    applyMarkers()
+    chart.timeScale().fitContent()
 
     // Handle clicks for trade markers
     if (onTradeClick) {
       chart.subscribeClick((param) => {
         if (!param.point || !param.time) return
-        
-        // Find if a marker exists at this time
         const clickedMarker = markers.find(m => m.time === param.time)
-        if (clickedMarker && clickedMarker.trade) {
-          onTradeClick(clickedMarker.trade)
-        } else {
-          onTradeClick(null) // clear selection if clicked elsewhere
-        }
+        onTradeClick(clickedMarker?.trade ?? null) // clear selection if clicked elsewhere
       })
     }
 
-    // Handle resize
-    const handleResize = () => {
-      chart.applyOptions({ width: chartContainerRef.current.clientWidth })
-    }
-    window.addEventListener('resize', handleResize)
+    // Re-color when the theme toggles
+    const stopThemeWatch = observeTheme(() => {
+      tokens = readTokens()
+      chart.applyOptions(chartOptions(tokens))
+      candleSeries.applyOptions({ upColor: tokens.gain, downColor: tokens.loss, wickUpColor: tokens.gain, wickDownColor: tokens.loss })
+      markers = buildMarkers(trades, tokens)
+      applyMarkers()
+    })
+
+    const resizeObserver = new ResizeObserver(() => chart.applyOptions({ width: container.clientWidth }))
+    resizeObserver.observe(container)
 
     return () => {
-      window.removeEventListener('resize', handleResize)
+      stopThemeWatch()
+      resizeObserver.disconnect()
       chart.remove()
     }
   }, [data, trades, height, onTradeClick])
 
-  return (
-    <div 
-      ref={chartContainerRef} 
-      style={{ width: '100%', height: `${height}px`, borderRadius: '8px', overflow: 'hidden' }} 
-    />
-  )
+  return <div ref={chartContainerRef} className="price-chart" style={{ width: '100%', height: `${height}px` }} />
 }

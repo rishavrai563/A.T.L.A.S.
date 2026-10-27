@@ -6,7 +6,7 @@ import { defaultStrategyCode } from '../data/sampleData'
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { strategies, backtestHistory, setStrategy, setStrategyCode, setActiveStrategyId, refreshData } = useApp()
+  const { strategies, backtestHistory, setStrategy, setStrategyCode, setActiveStrategyId, refreshData, dataStatus, setDataStatus } = useApp()
 
   const openStrategy = (s) => {
     // Build the config object the frontend needs
@@ -53,7 +53,7 @@ export default function Dashboard() {
     <div className="page-stack">
       <section className="hero panel">
         <div>
-          <div className="eyebrow">Strategy Workbench</div>
+          <div className="eyebrow">ATLAS Strategy Lab</div>
           <h1>Build, backtest, explore, and compare strategies.</h1>
           <p>Human-centered interface for understanding how strategy rules affect outcomes.</p>
         </div>
@@ -94,8 +94,18 @@ export default function Dashboard() {
               <div className="strategy-meta"><span>Summary</span><strong>{s.lastMetricSummary || 'Not tested yet'}</strong></div>
               <span className="open-link">Open Strategy ↗</span>
             </button>
-          )) : (
-            <p className="muted" style={{ padding: '20px' }}>Loading strategies...</p>
+          )) : dataStatus === 'loading' ? (
+            <>
+              {[0, 1, 2].map((i) => <div key={i} className="skeleton skeleton-card" role="presentation" />)}
+              <span className="sr-only" role="status">Loading strategies…</span>
+            </>
+          ) : dataStatus === 'error' ? (
+            <div className="compare-empty-note" role="alert" style={{ gridColumn: '1 / -1' }}>
+              <p>Couldn't load your strategies. Is the backend running?</p>
+              <button className="button primary" onClick={() => { setDataStatus('loading'); refreshData() }}>Retry</button>
+            </div>
+          ) : (
+            <p className="muted" style={{ gridColumn: '1 / -1', padding: '20px' }}>No strategies yet. Create one with “+ New Strategy”.</p>
           )}
         </div>
       </section>
@@ -115,7 +125,7 @@ export default function Dashboard() {
                   <td>{new Date(r.ranAt).toLocaleDateString()}</td>
                 </tr>
               )) : (
-                <tr><td colSpan="5" style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>No backtests run yet. Open a strategy and run your first backtest!</td></tr>
+                <tr><td colSpan="5" className="empty-cell">No backtests run yet. Open a strategy and run your first backtest!</td></tr>
               )}
             </tbody>
           </table>

@@ -2,7 +2,7 @@
 export const profile = {
   name: "Rishav Kumar",
   email: "rishav@email.com",
-  clientId: "ATW-2024-1014",
+  clientId: "ATL-2024-1014",
   memberSince: "Aug 2024",
   cash: 42380.5,
 };

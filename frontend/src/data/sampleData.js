@@ -242,6 +242,16 @@ export const historicalTrades = [
   { id: 8, date: '2021-03-05', action: 'SELL', price: 14980, quantity: 100, pnl: 5.7 },
 ]
 
+// Slider schema used when no strategy is open, or when the backend has no
+// schema for it (or cannot be reached).
+export const defaultParameterSchema = [
+  { key: 'rsiPeriod', label: 'RSI Period', min: 5, max: 50, step: 1, docKey: 'rsiPeriod' },
+  { key: 'buyThreshold', label: 'Oversold Threshold', min: 10, max: 45, step: 1, docKey: 'buyThreshold' },
+  { key: 'sellThreshold', label: 'Overbought Threshold', min: 55, max: 90, step: 1, docKey: 'sellThreshold' },
+  { key: 'stopLoss', label: 'Stop Loss (%)', min: 1, max: 20, step: 1, docKey: 'stopLoss' },
+  { key: 'takeProfit', label: 'Take Profit (%)', min: 5, max: 50, step: 1, docKey: 'takeProfit' },
+]
+
 export function generateEquityCurve(strategy = defaultStrategy) {
   const sensitivity = (strategy.buyThreshold - 30) * 0.35 - (strategy.sellThreshold - 70) * 0.08
   const base = [100, 101, 100.5, 103, 106, 104, 108, 111, 109, 115, 118, 116, 121, 125, 127, 130, 128, 134, 139, 145]
