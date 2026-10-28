@@ -1,70 +1,42 @@
-# AlgoTrade Workbench Frontend 
+# ATLAS Frontend
 
-This is the React/Vite frontend for the Algorithmic Trading Visualization Workbench.
-It implements the Lab 5 workflow as a frontend demo using sample data:
+React 19 + Vite frontend for ATLAS (Algorithmic Trading Lab and Analysis System). It talks to the ASP.NET Core backend through the `/api` proxy (`vite.config.js` → `http://localhost:5000`), so start the backend first. See the [root README](../README.md) for the full guide.
 
-Dashboard → Strategy Builder → Parameters → Running Backtest → Results → Explore → Compare
+Flow: Login → Dashboard → Strategy Builder → Parameters → Running Backtest → Results → Explore → Compare
 
-## 1. Install prerequisites
+## Run
 
-Install Node.js 20.19+ or 22.12+ for the current Vite major.
-
-Check:
-
-```bash
-node -v
-npm -v
-```
-
-## 2. Open this folder in VS Code
-
-Open the `algotrading-frontend` folder.
-
-## 3. Install packages
+Requires Node.js 20.19+ or 22.12+.
 
 ```bash
 npm install
+npm run dev        # http://localhost:5173
+npm run build      # production build in dist/
 ```
 
-## 4. Start the development server
+On Windows, if your folder path contains `&`, run Vite directly: `node node_modules/vite/bin/vite.js` (add `build` to build).
 
-```bash
-npm run dev
-```
+Demo login: `rishav@email.com` / `password123`.
 
-Open the localhost URL printed by Vite.
-
-## 5. What each folder means
+## Folder guide
 
 ```text
+public/            Favicon
 src/
-  components/      Reusable UI pieces
-  pages/           Full application screens
-  data/            Sample strategy/trade data and demo calculations
-  App.jsx          Routes + shared application state
+  api/             client.js (adds the bearer token), auth.js, strategies.js, backtest.js
+  assets/          ATLAS logo artwork
+  components/      Layout, charts, logo, Three.js scenes, backtest loader, editors
+  motion/          WebGL helpers, smooth scroll, scroll reveals, reduced-motion checks
+  pages/           Login, Dashboard, StrategyBuilder, Parameters, BacktestResults,
+                   Explore, Compare, Documentation, Profile/
+  data/            Glossary content and fallback/sample data
+  App.jsx          Session state, shared app context, routes
   main.jsx         React entry point
-  index.css        All styling
+  index.css        Design tokens (light/dark) and all styling
 ```
 
-## 6. What is functional
+## Notes
 
-- Sidebar navigation works.
-- New strategy opens the Strategy Builder.
-- Strategy parameters can be edited.
-- Parameter sliders update the visual demo metrics.
-- Run Backtest opens a loading/progress screen and then results.
-- Results show sample equity/trade data.
-- Explore Parameters changes sample output based on the selected values.
-- Compare shows two sample configurations side-by-side.
-
-
-
-## 7. Next development step
-
-Connect these frontend actions to the real backend:
-
-1. Strategy Builder → POST strategy configuration
-2. Run Backtest → POST backtest request
-3. Results → GET backtest result
-4. Explore → send changed parameters to backend
-5. Compare → request multiple configurations
+- The session token lives in `localStorage` under `atlas-user`. A `401` from any API call signs the user out.
+- Strategies, history and results come from the backend; sample data in `src/data/` is only a fallback.
+- All animation respects the OS "reduce motion" setting.
