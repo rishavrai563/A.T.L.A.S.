@@ -1,0 +1,158 @@
+There are four deliverables: measurable success targets, testing with at least five new users, a re-evaluation of usability and accessibility, and a validation summary comparing the new results with Lab 7.
+1. What exactly you need to do
+
+Step 1 — Define measurable targets before testing
+Set 3–4 measurable success criteria for your two existing user tasks:
+- Strategy Creation and Backtesting
+- Exploration
+Decide in advance what counts as success, how long a task should take, and how many errors are acceptable. Do this before testing new users.
+
+
+
+
+Step 2 — Test with at least five new users
+Recruit at least five participants who did not participate in Lab 7. Ask each participant to perform both tasks on your improved build.
+Observe task completion, time, errors, confusion, and whether participants correctly understand their results. Do not guide them through the interface.
+
+
+
+
+Step 3 — Re-evaluate usability and accessibility
+Apply all three evaluation methods shown in your slides:
+- Usability Inspection: inspect the interface using heuristic evaluation and, if useful, a cognitive walkthrough.
+- User-Based Evaluation: observe the five or more new users completing the tasks.
+- Accessibility Evaluation: check contrast, text size, keyboard navigation, and labels using inspection tools and manual checks.
+
+
+
+
+Step 4 — Compare Lab 7 with the new results
+For each major Lab 7 issue, record whether it is fixed, partially fixed, or unresolved. Compare the original questionnaire scores with the new scores and compare task performance where equivalent measurements are available.
+
+
+
+
+Step 5 — Prepare the validation summary report
+Report the targets, methods, results, before-and-after comparison, remaining issues, and your plan for completing the project. Export the report as a PDF for submission after the evaluation, as specified in your instructions.
+
+
+
+2. Set your success targets before testing
+I recommend using four targets that cover task success, efficiency, errors, and user understanding. These are proposed targets, not requirements explicitly specified by your slides.
+Metric	Task	Proposed target
+Task completion	Both tasks	At least 4 of 5 users complete each task independently
+Completion time	Strategy Creation and Backtesting	Median time of 4 minutes or less
+Completion time	Exploration	Median time of 5 minutes or less
+Understanding	Both tasks	Average rating of at least 4/5 for understanding results and parameter effects
+Also record critical errors, such as losing a configuration or incorrectly interpreting a backtest result. Report these even if the other targets are met.
+Why these targets? They are measurable, directly relate to the Lab 7 findings, and test whether your improvements have made the workbench easier to use.
+Important: Freeze these targets before the first participant starts. Do not change them later to make the results appear better.
+3. Prepare the new user-testing sessions
+Use the same two tasks you defined in Lab 7.
+Task 1 — Strategy Creation and Backtesting
+Ask the participant to create a strategy, configure its parameters and historical period, run the backtest, inspect the performance, and explain what happened.
+Record:
+- Whether the task was completed independently.
+- Total time.
+- Errors or incorrect actions.
+- Whether the participant correctly explains the backtest results.
+Task 2 — Exploration
+Ask the participant to change one or more parameters, run a variation, compare it with the original, and explain what changed.
+Record:
+- Whether the participant successfully creates and runs a variation.
+- Total time.
+- Whether they can identify the configuration used for each run.
+- Whether they can correctly explain the difference in results.
+Use neutral prompts such as “What are you looking for?” and “What do you expect to happen?” Avoid telling participants where to click.
+Participant recording sheet
+Use this for every new participant.
+Field	Record
+Participant ID	N01–N05 or higher
+Task	1 or 2
+Completed independently?	Yes / No
+Completion time	Minutes and seconds
+Errors	Number and description
+Confusion	Brief observation
+Result understood correctly?	Yes / No
+Feedback	Important comments
+Do not use the Lab 7 participants again. Use anonymous participant IDs in your report.
+4. Recheck the Lab 7 problems
+Your second evaluation must verify whether the previous issues have actually been resolved in the updated build.
+Lab 7 issue	What to check in the improved build
+Parameters may not reach LEAN correctly	Verify that changing a parameter changes the configuration used by the actual backtest.
+Compare lacks configuration context	Run two variations and check whether each result displays its actual parameters.
+Reset can destroy configuration	Change parameters and check whether Reset requests confirmation or provides recovery.
+Financial terminology is unclear	Check whether RSI, Drawdown and other metrics have contextual explanations.
+Python editor has poor Tab behaviour	Test indentation and keyboard navigation.
+Potentially insufficient contrast	Measure rendered text/background contrast.
+Small chart and helper text	Check readability at normal and increased zoom.
+Trade interactions are not keyboard accessible	Navigate to trade details and activate controls using only the keyboard.
+Missing accessible labels	Inspect the accessible names of charts, editor controls and buttons.
+Estimated Preview caused confusion	Verify that estimated values remain clearly distinguished from actual results.
+For every issue, assign one status:
+- Fixed
+   Verified through testing or inspection.
+- Partially fixed
+   Improved, but the problem remains in some cases.
+- Unresolved
+   Still present.
+- Cannot verify — insufficient evidence.
+Do not mark an issue fixed simply because a related code change exists.
+5. Compare the results with Lab 7
+This is one of the most important parts of the evaluation. Your previous questionnaire results provide the baseline.
+Questionnaire item	Lab 7 baseline	What to check now
+Q1 — Understanding strategy behaviour	3.8/5	Has strategy behaviour become easier to understand?
+Q2 — Understanding parameters	4.2/5	Are parameter controls clear?
+Q3 — Understanding backtest status	4.8/5	Is the already-strong running-state feedback maintained?
+Q4 — Understanding performance	4.0/5	Can users interpret the results correctly?
+Q5 — Understanding parameter effects	3.2/5	Has the weakest area improved?
+Use the same five questions and the same 1–5 scale for the new participants to make the comparison meaningful.
+You can calculate the change as:
+\[
+\text{Score Change}=\text{New Average}-\text{Lab 7 Average}
+\]
+
+For example, if Q5 rises from 3.2 to 4.0, the improvement is \(+0.8\) points. That is only an illustration; use your actual new results.
+Also compare task completion, completion time, and errors. Since Lab 7 used different participants, describe this as a before-and-after comparison between two user groups, not proof that the interface alone caused every difference.
+6. Apply all three evaluation methods
+Your slides distinguish three methods. Make sure all three are represented in your work.
+A. Usability Inspection
+Expert inspection
+Recheck the Lab 7 heuristic findings against the current build. Use Nielsen's heuristics, assign severity from 0–4, and record evidence for each unresolved issue. A cognitive walkthrough can additionally assess whether the next action is discoverable for a first-time user.
+
+B. User-Based Evaluation
+Five or more new users
+Conduct both tasks, collect times and errors, administer the questionnaire, and compare the results with Lab 7. This is your main source of evidence about actual user behaviour.
+
+C. Accessibility Evaluation
+Tools and manual checks
+Check contrast, text size, keyboard navigation, and accessible labels. Tools such as Lighthouse, WAVE, or a contrast checker can help, but manually test keyboard operation and actual rendered content as well.
+
+
+7. What your final validation report should contain
+Prepare the evidence while testing; then organize it into these three sections.
+1. User Validation
+- Success targets and why you selected them.
+- Choice of evaluation methods.
+- Results from at least five new users.
+- Task completion, time, errors, and questionnaire averages.
+- Before-and-after comparison with Lab 7.
+2. Inspection & Accessibility
+- Heuristic findings and severity.
+- A table showing which Lab 7 issues are fixed, partially fixed, or unresolved.
+- Accessibility findings with evidence.
+- Any checks that could not be verified.
+3. Validation Summary
+- Which targets were met or missed.
+- The most important improvements demonstrated by the evidence.
+- Outstanding usability and accessibility issues.
+- A concrete plan for completing the project before the final presentation.
+The instructions say to submit the validation summary as a PDF via the Google Form after the evaluation.
+8. Plan for the remaining project work
+Your final section should explain what remains to be completed after this validation.
+Prioritize:
+1. Fix any major issue that still prevents the actual strategy configuration from being executed correctly.
+2. Improve Compare so users can associate every result with its parameters.
+3. Address the most serious keyboard and accessibility barriers.
+4. Fix avoidable errors, including accidental Reset.
+5. Resolve smaller usability issues and complete the documentation and final presentation.

@@ -1,65 +1,65 @@
 # Setup Guide
 
-## 1. Clone the repository
+For the full overview (features, usage, project structure) see the [README](../README.md). This page covers setup only.
+
+## 1. Prerequisites
+
+- Node.js 20.19+ or 22.12+
+- .NET 8 SDK
+- Docker Desktop (only needed to run backtests)
+- Git
+
+## 2. Clone the repository
 
 ```bash
 git clone https://github.com/rishavrai563/Algorithmic-Trading-Workbench.git
 cd Algorithmic-Trading-Workbench
 ```
 
-## 2. Frontend setup
-
-Move into the frontend folder:
+## 3. Install dependencies
 
 ```bash
-cd frontend
+cd frontend && npm install && cd ..
+cd backend && dotnet restore && cd ..
+docker pull quantconnect/lean:latest
 ```
 
-Install packages:
+## 4. Run
+
+Everything at once:
+
+```powershell
+./run.ps1      # Windows
+./run.sh       # macOS / Linux
+```
+
+Or separately:
 
 ```bash
-npm install
+cd backend  && dotnet run --urls http://localhost:5000   # API
+cd frontend && npm run dev                               # UI on http://localhost:5173
 ```
 
-Start the development server:
+> On Windows, if the folder path contains `&`, `npm run` fails. Use `node node_modules/vite/bin/vite.js` instead (`run.ps1` already does).
 
-```bash
-npm run dev
-```
+## 5. Sign in
 
-Build the frontend for production:
+On first start the backend creates its database (`backend/Data/atlas.db`) and a demo account:
 
-```bash
-npm run build
-```
+- Email: `rishav@email.com`
+- Password: `password123`
 
-## 3. Backend setup
+You can also sign up from the login page. To wipe all users and data, stop the backend and delete `backend/Data/atlas.db*`. **Restart the backend after pulling updates.**
 
-The project contains a C# backend. Use the .NET tooling and the project files in the `backend/` folder to restore dependencies, build, and run the backend.
+## 6. LEAN workspace
 
-The exact command depends on the C# project file currently present in the repository.
+`lean_workspace/` holds the LEAN project, `config.json`, custom market data CSVs and results. The backend writes strategy code and parameters there for each run and mounts it into the Docker container.
 
-Typical commands are:
+## 7. Configuration and secrets
 
-```bash
-dotnet restore
-dotnet build
-dotnet run
-```
+Settings are in `backend/appsettings.json` (`ConnectionStrings:Atlas`, `Upstox:AccessToken`). Never commit real tokens; use user secrets or environment variables, e.g. `Upstox__AccessToken`. The SQLite database file is git-ignored.
 
-Run these from the folder that contains the backend project file.
-
-## 4. LEAN/backtesting setup
-
-The project also contains a `lean_workspace/` folder for the backtesting workflow.
-
-Use the repository's existing LEAN configuration, strategy files, historical data, and result files when running backtests.
-
-## 5. Environment variables
-
-Do not commit secrets to GitHub. Keep local configuration such as API keys, private tokens, or machine-specific settings in environment files or local configuration that is ignored by Git.
-
-## 6. Common Git workflow
+## 8. Common Git workflow
 
 ```bash
 git pull origin main
@@ -68,9 +68,3 @@ git add .
 git commit -m "Describe your change"
 git push origin main
 ```
-
-## 7. Frontend files
-
-The main React application is inside `frontend/src/`.
-
-The project uses React components and page-level components to keep the UI organized.

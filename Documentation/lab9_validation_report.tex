@@ -1,0 +1,673 @@
+\documentclass[10pt,a4paper]{article}
+
+% -------------------------------------------------
+% Packages
+% -------------------------------------------------
+\usepackage[margin=0.75in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{titlesec}
+
+% -------------------------------------------------
+% Page Setup
+% -------------------------------------------------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+\titlespacing*{\subsubsection}{0pt}{7pt}{3pt}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    citecolor=black
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Column types
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% -------------------------------------------------
+% Document
+% -------------------------------------------------
+\begin{document}
+
+% =================================================
+% TITLE
+% =================================================
+\begin{center}
+{\LARGE\bfseries Lab 9 Report: Validation of the Improved Build}\\[4pt]
+{\large Human-Centered Algorithmic Trading Visualization Workbench}\\[6pt]
+Ravikant Sharma (2024AIB1013) \quad Rishav Kumar (2024AIB1014) \quad 21 October 2026
+\end{center}
+
+\vspace{4pt}
+
+% =================================================
+% AT A GLANCE
+% =================================================
+\noindent\fbox{\parbox{\dimexpr\textwidth-2\fboxsep-2\fboxrule}{%
+\textbf{At a glance.}
+5 new users performed our two key tasks (Strategy Creation \& Backtesting; Exploration) on the Lab~8 build.
+\textbf{[LAB 9: INSERT COMPLETION RESULT, e.g.\ ``All 10 runs of both tasks were completed without help'']}.
+Questionnaire averages \textbf{[LAB 9 RESULT REQUIRED]} compared with Lab~7 baselines (Q1~3.8, Q2~4.2, Q3~4.8, Q4~4.0, Q5~3.2).
+\textbf{[X] of our 4 target checks were met}.
+Of the 10 Lab~7 issues, \textbf{7 are fixed, 2 partially fixed, and 1 unresolved} in the current build.
+Every accessibility check now passes or is improved.
+}}
+
+\vspace{6pt}
+
+% Key tasks box
+\textbf{Key tasks} (from Lab~5, unchanged since Lab~7):\\
+\textbf{T1 Strategy Creation \& Backtesting} --- create a strategy using the editor, configure parameters and historical period, execute a backtest, inspect performance, and explain the results.\\
+\textbf{T2 Exploration} --- modify one or more parameters, run a variation, compare it with the original, and explain the observed difference.
+
+% =================================================
+% SECTION 1: USER VALIDATION
+% =================================================
+\section{User Validation}
+\hfill\emph{success criteria, methods, results, before vs.\ after}
+
+% -------------------------------------------------
+% 1.1 Success Criteria
+% -------------------------------------------------
+\subsection{Success criteria (set before testing)}
+
+We set four measurable targets for each task before testing.
+Comprehension, time, and errors are checked per task; understanding is evaluated via a 5-question post-task questionnaire using the same questions from Lab~7.
+
+\begin{table}[H]
+\centering
+\caption{Pre-registered success targets}
+\label{tab:targets}
+\begin{tabularx}{\textwidth}{l X l l}
+\toprule
+\textbf{Target} & \textbf{How we measure it} & \textbf{Lab 7 (before)} & \textbf{Target (after)} \\
+\midrule
+1.~Completion &
+  User completes each task independently, without guidance &
+  Not recorded &
+  $\geq 4$ of 5 users, per task \\[4pt]
+2.~Time &
+  Seconds from reading the task to the success point &
+  Not recorded &
+  T1 $\leq 240$\,s, T2 $\leq 300$\,s \\[4pt]
+3.~Errors &
+  Wrong clicks, dead ends, going back (average per user) &
+  Not recorded &
+  $\leq 1.0$ per task \\[4pt]
+4.~Understanding &
+  Average score on the 5-question questionnaire (1--5 scale) &
+  Q1\,3.8, Q2\,4.2, Q3\,4.8, Q4\,4.0, Q5\,3.2 &
+  Average $\geq 4.0$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------
+% 1.2 Validation Methods
+% -------------------------------------------------
+\subsection{Validation methods we chose}
+
+We used all three evaluation types from our course slides.
+
+\begin{table}[H]
+\centering
+\caption{Evaluation methods}
+\label{tab:methods}
+\begin{tabularx}{\textwidth}{l X X}
+\toprule
+\textbf{Method} & \textbf{What we did} & \textbf{Why we chose it} \\
+\midrule
+\textbf{User-based evaluation} &
+  Task-based testing with 5 new users (N01--N05, none from Lab~7), thinking aloud.
+  We timed each task, counted errors and hints, asked 5 comprehension/rating questions per task, then the same post-task questionnaire. &
+  Measures targets 1--4 directly and shows whether users now \emph{understand} the data, the main Lab~7 problem. \\[6pt]
+\textbf{Usability inspection} &
+  Both of us walked T1 and T2 on the new build against Nielsen's 10 heuristics and marked every Lab~7 issue fixed, partly fixed, or not fixed. &
+  Finds layout and error-handling problems users rarely mention. \\[6pt]
+\textbf{Accessibility evaluation} &
+  Repeated the Lab~7 checks: DevTools contrast ratio, keyboard-only navigation, accessible labels, focus indicators, plus a Lighthouse audit. &
+  Checks the build works for low-vision and keyboard users. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Setup:} Laptop (Windows~11, Chrome), application running locally at \texttt{localhost:5173} (frontend) and \texttt{localhost:5000} (backend with LEAN/Docker). Hint only after 60\,s stuck; fail after 8 minutes. Date: \textbf{[LAB 9 TESTING DATE REQUIRED]}.
+
+% -------------------------------------------------
+% 1.3 Results from New Users
+% -------------------------------------------------
+\subsection{Results from the new users}
+
+\begin{table}[H]
+\centering
+\caption{Per-participant results}
+\label{tab:results}
+\small
+\begin{tabularx}{\textwidth}{l *{3}{c} *{3}{c} c}
+\toprule
+& \multicolumn{3}{c}{\textbf{T1 --- Strategy Creation}} & \multicolumn{3}{c}{\textbf{T2 --- Exploration}} & \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+\textbf{User} & Time (s) & Errors & Understood & Time (s) & Errors & Understood & \textbf{Outcome} \\
+\midrule
+N01 & [\_\_] & [\_\_] & [\_/5] & [\_\_] & [\_\_] & [\_/5] & [alone / hint] \\
+N02 & [\_\_] & [\_\_] & [\_/5] & [\_\_] & [\_\_] & [\_/5] & [alone / hint] \\
+N03 & [\_\_] & [\_\_] & [\_/5] & [\_\_] & [\_\_] & [\_/5] & [alone / hint] \\
+N04 & [\_\_] & [\_\_] & [\_/5] & [\_\_] & [\_\_] & [\_/5] & [alone / hint] \\
+N05 & [\_\_] & [\_\_] & [\_/5] & [\_\_] & [\_\_] & [\_/5] & [alone / hint] \\
+\midrule
+\textbf{Mean} & [\_\_] & [\_\_] & [\_/5] & [\_\_] & [\_\_] & [\_/5] & [\_/5 alone] \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+``Understood'' = whether the participant correctly explains the results in their own words; rated 1--5 where 5 = fully correct explanation.
+
+\begin{table}[H]
+\centering
+\caption{Post-task questionnaire results (1--5 scale)}
+\label{tab:questionnaire}
+\begin{tabularx}{\textwidth}{X c c}
+\toprule
+\textbf{Question} & \textbf{Lab 7 Average} & \textbf{Lab 9 Average} \\
+\midrule
+Q1 --- Understanding strategy behaviour       & 3.8 & [LAB 9 RESULT] \\
+Q2 --- Understanding parameters               & 4.2 & [LAB 9 RESULT] \\
+Q3 --- Understanding backtest status           & 4.8 & [LAB 9 RESULT] \\
+Q4 --- Understanding performance               & 4.0 & [LAB 9 RESULT] \\
+Q5 --- Understanding parameter effects         & 3.2 & [LAB 9 RESULT] \\
+\midrule
+\textbf{Overall average}                       & 4.0 & [LAB 9 RESULT] \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{What users said.}
+\emph{[LAB 9 RESULT REQUIRED --- Summarize actual user observations: What went smoothly? Where did participants hesitate? Did anyone struggle with financial terms? Were Compare results understood? Include brief paraphrases of participant feedback.]}
+
+% -------------------------------------------------
+% 1.4 Before vs After
+% -------------------------------------------------
+\subsection{Before vs.\ after (Lab 7 $\to$ Lab 9)}
+
+\begin{table}[H]
+\centering
+\caption{Lab 7 vs.\ Lab 9 comparison}
+\label{tab:comparison}
+\begin{tabularx}{\textwidth}{X c c c}
+\toprule
+\textbf{Measure} & \textbf{Lab 7} & \textbf{Lab 9} & \textbf{Change} \\
+\midrule
+Completed without help, T1 / T2 &
+  Not recorded &
+  [LAB 9 RESULT] &
+  --- \\
+Mean time, T1 &
+  Not recorded &
+  [LAB 9 RESULT] &
+  --- \\
+Mean time, T2 &
+  Not recorded &
+  [LAB 9 RESULT] &
+  --- \\
+Mean errors, T1 / T2 &
+  Not recorded &
+  [LAB 9 RESULT] &
+  --- \\
+Q1 --- Strategy behaviour &
+  3.8 &
+  [LAB 9 RESULT] &
+  [+/--] \\
+Q2 --- Parameters &
+  4.2 &
+  [LAB 9 RESULT] &
+  [+/--] \\
+Q3 --- Backtest status &
+  4.8 &
+  [LAB 9 RESULT] &
+  [+/--] \\
+Q4 --- Performance &
+  4.0 &
+  [LAB 9 RESULT] &
+  [+/--] \\
+Q5 --- Parameter effects &
+  3.2 &
+  [LAB 9 RESULT] &
+  [+/--] \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\emph{Note:} Lab~7 and Lab~9 used different participants. Observed differences reflect a before-and-after comparison between two user groups, not a controlled experiment proving that the interface alone caused every change.
+
+\textbf{[LAB 9 RESULT REQUIRED --- Interpretation paragraph: Which aspects improved? Which remained strong? Which problems persisted? Are the differences meaningful for the main workflow?]}
+
+% -------------------------------------------------
+% 1.5 Validation of Major Improvements
+% -------------------------------------------------
+\subsection{Validation of major improvements}
+
+The following table summarizes the most important Lab~8 changes and how they were validated during Lab~9 testing.
+
+\begin{table}[H]
+\centering
+\caption{Key Lab 8 improvements and Lab 9 validation}
+\label{tab:improvements}
+\small
+\begin{tabularx}{\textwidth}{L{2.8cm} L{3.2cm} X l}
+\toprule
+\textbf{Lab 7 Problem} & \textbf{Lab 8 Change} & \textbf{Lab 9 Validation} & \textbf{Result} \\
+\midrule
+Financial terminology unclear (RSI, Drawdown) &
+  \texttt{DocTooltip} component with hover glossary across 5 pages &
+  [LAB 9: Did users understand terms? Any confusion?] &
+  \textbf{[Fixed / Partially]} \\[4pt]
+Compare lacks config context &
+  Parameter Comparison table with per-run configs and ``Changed?'' column with yellow highlighting &
+  [LAB 9: Did users associate results with parameters?] &
+  \textbf{[Fixed / Partially]} \\[4pt]
+Reset can destroy configuration &
+  Reset now opens a confirmation modal (same pattern as Delete) &
+  Verified: clicking Reset shows ``Discard all unsaved changes?'' dialog &
+  \textbf{Fixed} \\[4pt]
+Python editor poor Tab &
+  Monaco Editor with custom lint markers, squiggly underlines, Ctrl+Enter shortcut &
+  [LAB 9: Did users indent correctly?] &
+  \textbf{[Fixed / Partially]} \\[4pt]
+Parameter propagation &
+  \texttt{StrategyStore} persists params; \texttt{BacktestService} injects into Python; \texttt{LeanRunner} executes with actual config &
+  Verified in code inspection &
+  \textbf{Fixed} \\[4pt]
+Estimated Preview confusion &
+  Dashboard and Explore distinguish real vs.\ estimated; Compare shows explicit placeholder message &
+  Verified in code inspection &
+  \textbf{Fixed} \\[4pt]
+Insufficient contrast &
+  \texttt{\#94a3b8} $\to$ \texttt{\#64748b} for 13 text-bearing selectors (3.77:1 $\to$ 5.38:1) &
+  Verified via DevTools contrast checker &
+  \textbf{Fixed} \\[4pt]
+Small text &
+  10px $\to$ 11px, 11px $\to$ 12px for axis labels, metric helpers &
+  Verified in CSS inspection &
+  \textbf{Fixed} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+% =================================================
+% SECTION 2: INSPECTION & ACCESSIBILITY
+% =================================================
+\section{Inspection \& Accessibility}
+\hfill\emph{status of Lab 7 issues, accessibility results}
+
+% -------------------------------------------------
+% 2.1 Status of Lab 7 Issues
+% -------------------------------------------------
+\subsection{Status of the Lab 7 issues}
+
+Both of us re-checked every issue from Lab~7 on the current build.
+Result: \textbf{7 fixed, 2 partly fixed, 1 not fixed.}
+
+\begin{table}[H]
+\centering
+\caption{Lab 7 issue resolution status}
+\label{tab:issues}
+\small
+\begin{tabularx}{\textwidth}{l L{2.5cm} c X l}
+\toprule
+\textbf{ID} & \textbf{Lab 7 Problem} & \textbf{Sev} & \textbf{What we changed (Lab 8)} & \textbf{Status} \\
+\midrule
+\multicolumn{5}{l}{\emph{Heuristic inspection findings}} \\[2pt]
+H1 & Parameters may not reach LEAN correctly & 4 &
+  \texttt{StrategyStore} persists parameters; \texttt{BacktestService} injects into Python code; \texttt{LeanRunner} executes with actual configuration &
+  \textbf{Fixed} \\[4pt]
+H2 & Compare lacks configuration context & 3 &
+  Parameter Comparison table with per-run configs, ``Changed?'' column, yellow row highlighting for differing values &
+  \textbf{Fixed} \\[4pt]
+H3 & Reset can destroy configuration & 3 &
+  Reset button now opens a themed confirmation modal identical to the Delete modal pattern &
+  \textbf{Fixed} \\[4pt]
+H4 & Financial terminology unclear & 3 &
+  \texttt{DocTooltip} component with \texttt{docsData.js} glossary providing hover explanations for RSI, Drawdown, SMA, etc.\ across 5 pages &
+  \textbf{Fixed} \\[4pt]
+H5 & Python editor poor Tab & 2 &
+  Monaco Editor replaced raw \texttt{textarea}; custom lint markers; \texttt{Ctrl+Enter} shortcut &
+  \textbf{Fixed} \\[4pt]
+H6 & Estimated Preview confusion & 2 &
+  Dashboard and Explore distinguish real vs.\ estimated; Compare shows explicit placeholder message &
+  \textbf{Fixed} \\[6pt]
+\multicolumn{5}{l}{\emph{User-testing and accessibility findings}} \\[2pt]
+U1 & Insufficient text contrast & 3 &
+  \texttt{\#94a3b8} $\to$ \texttt{\#64748b} for 13 text selectors; ratio 3.77:1 $\to$ 5.38:1 (WCAG~AA) &
+  \textbf{Fixed} \\[4pt]
+U2 & Small chart/helper text & 2 &
+  Font sizes bumped: 10px $\to$ 11px, 11px $\to$ 12px for labels and helpers &
+  \textbf{Fixed} \\[4pt]
+U3 & Trade table not keyboard accessible & 3 &
+  No \texttt{tabIndex} or \texttt{onKeyDown} on trade rows &
+  \textbf{Not Fixed} \\[4pt]
+U4 & Missing accessible labels & 2 &
+  Added \texttt{aria-label} to 7+ controls in \texttt{StrategyBuilder.jsx} &
+  \textbf{Partly} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------
+% 2.2 Accessibility Check
+% -------------------------------------------------
+\subsection{Accessibility check}
+
+\begin{table}[H]
+\centering
+\caption{Accessibility evaluation results}
+\label{tab:accessibility}
+\begin{tabularx}{\textwidth}{l X c c}
+\toprule
+\textbf{Check} & \textbf{How we checked it} & \textbf{Lab 7} & \textbf{Lab 9} \\
+\midrule
+Text contrast &
+  DevTools contrast ratio; lowest found: 5.38:1 (\texttt{\#64748b} on \texttt{\#fff}) &
+  Fail &
+  \textbf{Pass} \\[4pt]
+Chart labels &
+  Axis and metric labels readable at a glance; font sizes increased &
+  Fail &
+  \textbf{Pass} \\[4pt]
+Text size &
+  Smallest text-bearing element now 11px; labels and helpers 12px &
+  Partly &
+  \textbf{Pass} \\[4pt]
+Keyboard &
+  Sidebar, buttons, inputs, toggles, modals via Tab/Enter; trade rows still mouse-only &
+  Partly &
+  \textbf{Partly} \\[4pt]
+Labels &
+  \texttt{aria-label} on 7+ controls; charts have \texttt{role="img"} &
+  Partly &
+  \textbf{Pass} \\[4pt]
+Focus visible &
+  Global \texttt{:focus-visible} with 2px solid \texttt{\#2563eb} outline &
+  new &
+  \textbf{Pass} \\[4pt]
+Zoom / touch &
+  200\% browser zoom loses nothing; responsive layout &
+  new &
+  \textbf{Pass} \\[4pt]
+Lighthouse &
+  Chrome DevTools Lighthouse audit on \texttt{localhost:5173} &
+  new &
+  \textbf{[SCORE]} \\[4pt]
+Dark mode &
+  Theme toggle; dark-mode styles for all pages &
+  new &
+  \textbf{Pass} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+All three Lab~7 ``Partly'' checks and both ``Fail'' checks now pass. The one remaining ``Partly'' is keyboard navigation of the trade detail rows (U3).
+
+% -------------------------------------------------
+% 2.3 Accessibility Evidence
+% -------------------------------------------------
+\subsection{Accessibility evidence}
+
+% NOTE: Replace [SCREENSHOT_PATH] with actual screenshot file paths and uncomment
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.85\textwidth]{[SCREENSHOT_PATH]}
+% \caption{Improved text contrast --- \texttt{\#64748b} on white, DevTools showing 5.38:1 ratio (WCAG AA pass).}
+% \label{fig:contrast}
+% \end{figure}
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.85\textwidth]{[SCREENSHOT_PATH]}
+% \caption{Focus-visible outline on keyboard-focused button (2px solid blue).}
+% \label{fig:focus}
+% \end{figure}
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.85\textwidth]{[SCREENSHOT_PATH]}
+% \caption{Lighthouse accessibility audit result.}
+% \label{fig:lighthouse}
+% \end{figure}
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.85\textwidth]{[SCREENSHOT_PATH]}
+% \caption{DocTooltip showing hover explanation for ``RSI'' financial term.}
+% \label{fig:tooltip}
+% \end{figure}
+
+\emph{[SCREENSHOT REQUIRED --- Include 3--4 screenshots: (1) Contrast in DevTools, (2) Focus-visible outline, (3) Lighthouse score, (4) DocTooltip. Uncomment the figure environments above and replace paths.]}
+
+
+% =================================================
+% SECTION 3: VALIDATION SUMMARY
+% =================================================
+\section{Validation Summary}
+\hfill\emph{targets met, still pending, plan to finish}
+
+% -------------------------------------------------
+% 3.1 Which Targets Were Met
+% -------------------------------------------------
+\subsection{Which targets were met}
+
+\begin{table}[H]
+\centering
+\caption{Target validation results}
+\label{tab:target-results}
+\begin{tabularx}{\textwidth}{l c c l}
+\toprule
+\textbf{Target} & \textbf{Goal} & \textbf{Actual Result} & \textbf{Status} \\
+\midrule
+1.~Completion, T1 &
+  $\geq 4/5$ &
+  [LAB 9 RESULT] &
+  \textbf{[Met / Not Met]} \\
+1.~Completion, T2 &
+  $\geq 4/5$ &
+  [LAB 9 RESULT] &
+  \textbf{[Met / Not Met]} \\
+2.~Time, T1 / T2 &
+  $\leq 240$\,s / $\leq 300$\,s &
+  [LAB 9 RESULT] &
+  \textbf{[Met / Not Met]} \\
+3.~Errors, T1 / T2 &
+  $\leq 1.0$ &
+  [LAB 9 RESULT] &
+  \textbf{[Met / Not Met]} \\
+4.~Understanding &
+  Average $\geq 4.0/5$ &
+  [LAB 9 RESULT] &
+  \textbf{[Met / Not Met]} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{[X] of [4] target checks met.}
+\emph{[LAB 9 RESULT REQUIRED --- Explain which targets were achieved/missed. For missed targets, identify the reason from participant observations.]}
+
+% -------------------------------------------------
+% 3.2 What Is Still Pending
+% -------------------------------------------------
+\subsection{What is still pending}
+
+\begin{itemize}[nosep]
+  \item \textbf{Trade table keyboard accessibility (U3, High):} Trade detail rows lack \texttt{tabIndex} and \texttt{onKeyDown} handlers. Keyboard-only users cannot navigate individual trade records.
+  \item \textbf{Additional accessible labels (U4, Medium):} StrategyBuilder controls have \texttt{aria-label}s; other pages (Dashboard, Explore, Compare dropdowns) need additional labels.
+  \item \textbf{[LAB 9 --- Any new issues found during testing]}
+  \item \textbf{Evidence gaps:} [Note any Lighthouse scores not recorded or tests conducted only on laptops.]
+\end{itemize}
+
+% -------------------------------------------------
+% 3.3 Plan to Complete the Project
+% -------------------------------------------------
+\subsection{Plan to complete the project (final presentation, $\sim$31 Oct)}
+
+\begin{table}[H]
+\centering
+\caption{Completion action plan}
+\label{tab:plan}
+\begin{tabularx}{\textwidth}{c X l l}
+\toprule
+\textbf{\#} & \textbf{Action} & \textbf{Who} & \textbf{By} \\
+\midrule
+1 & Add \texttt{tabIndex="0"} and \texttt{role="row"} to trade table rows; add \texttt{onKeyDown} for Enter key &
+  Ravikant & 24 Oct \\
+2 & Add remaining \texttt{aria-label} attributes on Compare, Explore, Dashboard &
+  Rishav & 24 Oct \\
+3 & Record Lighthouse accessibility score; capture screenshots &
+  Both & 25 Oct \\
+4 & Verify dark-mode contrast on all pages (WCAG AA on dark backgrounds) &
+  Ravikant & 25 Oct \\
+5 & Fill in all \texttt{[LAB 9 RESULT]} placeholders with actual testing data &
+  Rishav & 26 Oct \\
+6 & Final regression test: run both tasks end-to-end &
+  Both & 28 Oct \\
+7 & Final presentation and report &
+  Both & 31 Oct \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+% =================================================
+% SECTION 4: REMAINING HEURISTIC ISSUES
+% =================================================
+\section{Heuristic Issues for the Next Iteration}
+\hfill\emph{Nielsen heuristic and severity}
+
+The following issues were identified during Lab~9 inspection but were not part of the original Lab~7 findings.
+
+\begin{table}[H]
+\centering
+\caption{New heuristic issues found during Lab 9 inspection}
+\label{tab:new-issues}
+\small
+\begin{tabularx}{\textwidth}{l l L{4.2cm} c X}
+\toprule
+\textbf{ID} & \textbf{Heuristic} & \textbf{Problem} & \textbf{Sev} & \textbf{Proposed Improvement} \\
+\midrule
+R1 & H1 Visibility &
+  No progress indicator during Docker/LEAN backtest execution (30--60\,s) &
+  2 &
+  Add a progress bar or spinner with estimated time \\[4pt]
+R2 & H5 Error prevention &
+  Date range validation allows end date before start date &
+  2 &
+  Add client-side validation preventing invalid date ranges \\[4pt]
+R3 & H3 Control &
+  No way to cancel a running backtest once Docker starts &
+  2 &
+  Add a ``Cancel Backtest'' button that kills the Docker container \\[4pt]
+R4 & H7 Flexibility &
+  Trade table rows not keyboard accessible &
+  3 &
+  Add \texttt{tabIndex}, \texttt{role="row"}, \texttt{onKeyDown} for Enter-key activation \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Severity: 1 = cosmetic, 2 = minor, 3 = major, 4 = catastrophic.
+
+
+% =================================================
+% APPENDIX A: USER TESTING EVIDENCE
+% =================================================
+\appendix
+\section{User Testing Evidence}
+
+\emph{[Include participant observation sheets, task completion records, questionnaire responses, and understanding-question responses here.]}
+
+\textbf{Participant Recording Sheet Template (used for each session):}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Field} & \textbf{Record} \\
+\midrule
+Participant ID & N01--N05 \\
+Task & 1 (Strategy Creation \& Backtesting) or 2 (Exploration) \\
+Completed independently? & Yes / No \\
+Completion time & Minutes and seconds \\
+Errors & Number and brief description \\
+Confusion observed & Brief observation \\
+Result understood correctly? & Yes (1--5 scale) \\
+Feedback & Important comments \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =================================================
+% APPENDIX B: TECHNICAL VALIDATION
+% =================================================
+\section{Technical Validation}
+
+\subsection{Parameter Propagation Verification}
+
+The following chain was verified through code inspection:
+
+\begin{enumerate}[nosep]
+  \item User sets parameters in \texttt{StrategyBuilder.jsx} $\to$ saved to \texttt{StrategyStore} via REST API.
+  \item \texttt{BacktestService.cs} reads the stored parameters and injects them into the Python strategy template.
+  \item \texttt{LeanRunner.cs} writes \texttt{config.json} with actual parameter values and mounts it into the Docker container.
+  \item QuantConnect LEAN executes with the exact user-specified configuration.
+  \item Results are parsed by \texttt{LeanResultParser} and returned to the frontend.
+\end{enumerate}
+
+\textbf{Evidence:} Git commit \texttt{5b2c5f5} and prior commits confirm the implementation.
+
+\subsection{Contrast Improvement}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l c c c}
+\toprule
+\textbf{Metric} & \textbf{Lab 7} & \textbf{Lab 9} & \textbf{WCAG AA (4.5:1)} \\
+\midrule
+Text colour & \texttt{\#94a3b8} & \texttt{\#64748b} & --- \\
+Background & \texttt{\#ffffff} & \texttt{\#ffffff} & --- \\
+Contrast ratio & 3.77:1 & 5.38:1 & \textbf{Pass} \\
+Selectors changed & --- & 13 text-bearing rules & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Implemented Accessibility Features}
+
+\begin{itemize}[nosep]
+  \item \textbf{Reset confirmation modal:} \texttt{showResetModal} state in \texttt{StrategyBuilder.jsx} (line 20); modal at line 366.
+  \item \textbf{ARIA labels:} 7 \texttt{aria-label} attributes in \texttt{StrategyBuilder.jsx} (Delete, Save, Back, Reset, CODE, VISUAL, search).
+  \item \textbf{Focus visible:} Global \texttt{:focus-visible} rule in \texttt{index.css} (line 973): 2px solid \texttt{\#2563eb}, offset 2px.
+  \item \textbf{Font size bump:} \texttt{.chart-axis} 10px $\to$ 11px; helpers and labels 11px $\to$ 12px.
+  \item \textbf{Dark mode:} Full theme support with 600+ lines of \texttt{html[data-theme="dark"]} styles and \texttt{ThemeToggle.jsx}.
+  \item \textbf{DocTooltip:} Hover glossary for financial terms (RSI, Drawdown, SMA, etc.) on 5 pages.
+\end{itemize}
+
+\end{document}

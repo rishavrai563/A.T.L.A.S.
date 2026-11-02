@@ -9,3 +9,8 @@ node_modules/
 commit_history.ps1
 create_commits.ps1
 dotnet-install.ps1
+
+# Reports & documentation artifacts
+*project_progress*
+project_progress_report.md
+

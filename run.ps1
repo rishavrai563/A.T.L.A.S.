@@ -1,5 +1,5 @@
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "Starting AlgoTrading Workbench..." -ForegroundColor Cyan
+Write-Host "Starting ATLAS (Algorithmic Trading Lab)..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
 # 1. Ensure dotnet is in the PATH

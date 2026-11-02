@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "=========================================="
-echo "Starting AlgoTrading Workbench..."
+echo "Starting ATLAS (Algorithmic Trading Lab)..."
 echo "=========================================="
 
 # 1. Start the C# Backend in the background

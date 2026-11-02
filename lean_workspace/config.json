@@ -33,8 +33,8 @@
     "data-file": "nifty50_day.csv",
     "resolution": "day",
     "rsi-period": "14",
-    "oversold": "39",
-    "overbought": "83",
+    "oversold": "30",
+    "overbought": "70",
     "stop-loss": "5",
     "take-profit": "10"
   },

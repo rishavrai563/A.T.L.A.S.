@@ -1,70 +1,73 @@
 # API Documentation
 
 ## Overview
-This document outlines the REST API endpoints provided by the ASP.NET Core backend. The API is divided into two main controllers: `StrategiesController` for managing strategy state and history, and `BacktestController` for executing and monitoring LEAN backtests. All responses are formatted in JSON.
+REST API of the ATLAS ASP.NET Core backend (default `http://localhost:5000`). It has three controllers: `AuthController` (accounts and sessions), `StrategiesController` (per-user strategies and backtest history) and `BacktestController` (LEAN execution). All bodies and responses are JSON.
 
-## 1. Strategies Controller
-**Base Route:** `/api/strategies`  
-Manages CRUD operations for user strategies and stores historical backtest records.
+## Authentication
+Login and registration return a `token`. Send it on every protected request:
 
-### `GET` `/api/strategies`
-- **Description:** Retrieves a list of all saved strategies.
-- **Payload/Query:** None
+```
+Authorization: Bearer <token>
+```
 
-### `GET` `/api/strategies/{id}`
-- **Description:** Retrieves a single strategy profile by its unique ID.
-- **Payload/Query:** URL Parameter: `id` (string)
-
-### `POST` `/api/strategies`
-- **Description:** Creates a new blank strategy in the database.
-- **Payload/Query:** JSON body (StrategyProfile)
-
-### `PUT` `/api/strategies/{id}`
-- **Description:** Updates and saves an existing strategy (e.g., modified code or parameters).
-- **Payload/Query:** URL Parameter: `id`, JSON body (StrategyProfile)
-
-### `DELETE` `/api/strategies/{id}`
-- **Description:** Deletes a strategy from the database.
-- **Payload/Query:** URL Parameter: `id` (string)
+- Tokens expire after 7 days and are revoked on logout. Only a hash of the token is stored server-side.
+- A missing, expired or revoked token returns `401 { "error": "Session expired. Please sign in again." }`.
+- Strategies and history are scoped to the signed-in user. Another user's strategy ID returns `404`.
 
 ---
+
+## 1. Auth Controller
+**Base Route:** `/api/auth`
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| POST | `/register` | – | Body `{ name, email, password }`. Password ≥ 6 chars, valid email. Returns the user plus `token`. `409` if the email exists. |
+| POST | `/login` | – | Body `{ email, password }` (email is case-insensitive). Returns the user plus `token`; `401` on bad credentials. |
+| POST | `/logout` | token | Revokes the current token. |
+| GET | `/me` | token | Current user with portfolio. |
+| PUT | `/me` | token | Body `{ name }`. Updates the display name. |
+| POST | `/me/password` | token | Body `{ currentPassword, newPassword }`. Signs out all other sessions. |
+
+User response shape: `{ token, id, name, email, clientId, memberSince, cash, holdings[], orders[] }`. Password hashes are never returned.
+
+---
+
+## 2. Strategies Controller
+**Base Route:** `/api/strategies` — all routes require a token.
+
+### `GET` `/api/strategies`
+Lists the user's strategies.
+
+### `GET` `/api/strategies/{id}`
+Returns one strategy (`404` if it isn't the user's).
+
+### `POST` `/api/strategies`
+Creates a strategy. Body: StrategyProfile. The owner is set from the session.
+
+### `PUT` `/api/strategies/{id}`
+Saves changes. If `parametersSchema` is omitted or empty, the existing schema is kept.
+
+### `DELETE` `/api/strategies/{id}`
+Deletes a strategy.
 
 ### Backtest History
 
-### `GET` `/api/strategies/history`
-- **Description:** Retrieves all historical backtest records across all strategies.
-- **Payload/Query:** None
-
-### `GET` `/api/strategies/{id}/history`
-- **Description:** Retrieves the historical backtest variations run for a specific strategy.
-- **Payload/Query:** URL Parameter: `id` (string)
-
-### `POST` `/api/strategies/{id}/history`
-- **Description:** Records the performance metrics and parameters of a newly completed backtest run.
-- **Payload/Query:** URL Parameter: `id`, JSON body (BacktestRecord)
+- `GET /api/strategies/history` — all of the user's backtest records, newest first.
+- `GET /api/strategies/{id}/history` — records for one strategy.
+- `POST /api/strategies/{id}/history` — saves a completed run (body: BacktestRecord) and marks the strategy *Backtested*. `404` if the strategy isn't the user's.
 
 ---
 
-## 2. Backtest Controller
-**Base Route:** `/api/backtest`  
-Handles the orchestration of the Dockerized LEAN execution engine and external asset fetching.
+## 3. Backtest Controller
+**Base Route:** `/api/backtest` — currently not protected by login.
 
-### `POST` `/api/backtest`
-- **Description:** Submits a strategy configuration and Python code to run in the LEAN engine. Spawns an asynchronous job.
-- **Payload/Query:** JSON body (BacktestRequest)
+- `POST /api/backtest` — submits strategy code and configuration to LEAN; spawns an asynchronous job. Body: BacktestRequest.
+- `GET /api/backtest/{id}/status` — polls a job; returns progress and, when finished, the result.
+- `GET /api/backtest/status` — health check: Docker availability and LEAN image status.
+- `GET /api/backtest/assets` — static list of supported assets.
+- `GET /api/backtest/assets/search?q=` — Yahoo Finance ticker autocomplete proxy.
 
-### `GET` `/api/backtest/{id}/status`
-- **Description:** Polls the status of a running backtest job. Returns progress percentages and final results when complete.
-- **Payload/Query:** URL Parameter: `id` (string)
+---
 
-### `GET` `/api/backtest/status`
-- **Description:** System health check. Returns Docker availability and LEAN image status.
-- **Payload/Query:** None
-
-### `GET` `/api/backtest/assets`
-- **Description:** Retrieves a list of statically supported fallback assets for the frontend.
-- **Payload/Query:** None
-
-### `GET` `/api/backtest/assets/search`
-- **Description:** Proxy endpoint that queries the Yahoo Finance API to provide universal ticker autocomplete suggestions.
-- **Payload/Query:** Query Parameter: `q` (string)
+## Storage
+Data lives in a SQLite database (`backend/Data/atlas.db`, created on first start): users, sessions, holdings, orders, strategies and backtest records. Parameter schemas, parameter values and full backtest results are stored as JSON columns.
