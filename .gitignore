@@ -16,6 +16,7 @@ dotnet-install.ps1
 */*/*.pdf
 *.pptx
 */*.pptx
+presentation/
 
 # Reports & documentation artifacts
 *project_progress*
