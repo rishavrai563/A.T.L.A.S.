@@ -1,2 +1,6 @@
 [Bb]in/
 [Oo]bj/
+# Local SQLite database (users, sessions, strategies)
+Data/*.db
+Data/*.db-shm
+Data/*.db-wal

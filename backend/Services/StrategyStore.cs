@@ -1,185 +1,177 @@
+using AlgoTrading.Data;
 using AlgoTrading.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AlgoTrading.Services;
 
 /// <summary>
-/// In-memory persistence store for strategies and backtest history.
-/// Initialized with 3 default strategies on startup. Singleton lifetime.
+/// Database-backed store for each user's strategies and backtest history.
+/// Every query is filtered by owner, so users only ever see their own data.
+/// Scoped per request.
 /// </summary>
 public class StrategyStore
 {
-    private readonly List<StrategyProfile> _strategies = new();
-    private readonly List<BacktestRecord> _backtestHistory = new();
-    private readonly object _lock = new();
+    private readonly AtlasDbContext _db;
 
-    public StrategyStore()
+    public StrategyStore(AtlasDbContext db)
     {
-        SeedDefaults();
+        _db = db;
     }
 
     // ── Strategies ─────────────────────────────────────────
 
-    public List<StrategyProfile> GetAllStrategies()
+    public Task<List<StrategyProfile>> GetAllStrategiesAsync(string ownerId) =>
+        _db.Strategies.Where(s => s.OwnerId == ownerId).OrderBy(s => s.CreatedAt).ToListAsync();
+
+    public Task<StrategyProfile?> GetStrategyAsync(string ownerId, string id) =>
+        _db.Strategies.FirstOrDefaultAsync(s => s.OwnerId == ownerId && s.Id == id);
+
+    public async Task<StrategyProfile> CreateStrategyAsync(string ownerId, StrategyProfile profile)
     {
-        lock (_lock) return _strategies.ToList();
+        profile.Id = NewId();
+        profile.OwnerId = ownerId;
+        profile.CreatedAt = DateTime.UtcNow;
+        profile.UpdatedAt = DateTime.UtcNow;
+        _db.Strategies.Add(profile);
+        await _db.SaveChangesAsync();
+        return profile;
     }
 
-    public StrategyProfile? GetStrategy(string id)
+    public async Task<StrategyProfile?> UpdateStrategyAsync(string ownerId, string id, StrategyProfile update)
     {
-        lock (_lock) return _strategies.FirstOrDefault(s => s.Id == id);
+        var existing = await GetStrategyAsync(ownerId, id);
+        if (existing == null) return null;
+
+        existing.Name = update.Name;
+        existing.Asset = update.Asset;
+        existing.Timeframe = update.Timeframe;
+        existing.StartDate = update.StartDate;
+        existing.EndDate = update.EndDate;
+        existing.PythonCode = update.PythonCode;
+        // Partial updates (e.g. the builder's Save) omit the schema; keep the
+        // existing one rather than wiping the Parameters page's sliders.
+        if (update.ParametersSchema.Count > 0) existing.ParametersSchema = update.ParametersSchema;
+        existing.ParameterValues = update.ParameterValues;
+        existing.UpdatedAt = DateTime.UtcNow;
+        // Status preserved unless explicitly set
+        if (!string.IsNullOrEmpty(update.Status)) existing.Status = update.Status;
+
+        await _db.SaveChangesAsync();
+        return existing;
     }
 
-    public StrategyProfile CreateStrategy(StrategyProfile profile)
+    public async Task<bool> DeleteStrategyAsync(string ownerId, string id)
     {
-        lock (_lock)
-        {
-            profile.Id = Guid.NewGuid().ToString("N")[..8];
-            profile.CreatedAt = DateTime.UtcNow;
-            profile.UpdatedAt = DateTime.UtcNow;
-            _strategies.Add(profile);
-            return profile;
-        }
-    }
-
-    public StrategyProfile? UpdateStrategy(string id, StrategyProfile update)
-    {
-        lock (_lock)
-        {
-            var existing = _strategies.FirstOrDefault(s => s.Id == id);
-            if (existing == null) return null;
-
-            existing.Name = update.Name;
-            existing.Asset = update.Asset;
-            existing.Timeframe = update.Timeframe;
-            existing.StartDate = update.StartDate;
-            existing.EndDate = update.EndDate;
-            existing.PythonCode = update.PythonCode;
-            existing.ParametersSchema = update.ParametersSchema;
-            existing.ParameterValues = update.ParameterValues;
-            existing.UpdatedAt = DateTime.UtcNow;
-            // Status preserved unless explicitly set
-            if (!string.IsNullOrEmpty(update.Status)) existing.Status = update.Status;
-
-            return existing;
-        }
-    }
-
-    public bool DeleteStrategy(string id)
-    {
-        lock (_lock)
-        {
-            var s = _strategies.FirstOrDefault(s => s.Id == id);
-            if (s == null) return false;
-            _strategies.Remove(s);
-            return true;
-        }
+        var deleted = await _db.Strategies.Where(s => s.OwnerId == ownerId && s.Id == id).ExecuteDeleteAsync();
+        return deleted > 0;
     }
 
     // ── Backtest History ───────────────────────────────────
 
-    public List<BacktestRecord> GetBacktestHistory()
-    {
-        lock (_lock) return _backtestHistory.OrderByDescending(r => r.RanAt).ToList();
-    }
+    public Task<List<BacktestRecord>> GetBacktestHistoryAsync(string ownerId) =>
+        _db.BacktestRecords.Where(r => r.OwnerId == ownerId).OrderByDescending(r => r.RanAt).ToListAsync();
 
-    public List<BacktestRecord> GetHistoryForStrategy(string strategyId)
-    {
-        lock (_lock) return _backtestHistory
-            .Where(r => r.StrategyId == strategyId)
+    public Task<List<BacktestRecord>> GetHistoryForStrategyAsync(string ownerId, string strategyId) =>
+        _db.BacktestRecords
+            .Where(r => r.OwnerId == ownerId && r.StrategyId == strategyId)
             .OrderByDescending(r => r.RanAt)
-            .ToList();
+            .ToListAsync();
+
+    /// <summary>Saves a run and marks its strategy as backtested. Null if the strategy isn't the owner's.</summary>
+    public async Task<BacktestRecord?> AddBacktestRecordAsync(string ownerId, BacktestRecord record)
+    {
+        var strategy = await GetStrategyAsync(ownerId, record.StrategyId);
+        if (strategy == null) return null;
+
+        record.Id = NewId();
+        record.OwnerId = ownerId;
+        record.RanAt = DateTime.UtcNow;
+        _db.BacktestRecords.Add(record);
+
+        strategy.Status = "Backtested";
+        strategy.LastMetricSummary = $"{record.TotalReturn:+0.0;-0.0}% return, {record.TotalTrades} trades";
+
+        await _db.SaveChangesAsync();
+        return record;
     }
 
-    public BacktestRecord AddBacktestRecord(BacktestRecord record)
+    private static string NewId() => Guid.NewGuid().ToString("N")[..8];
+
+    // ── Starter strategies ─────────────────────────────────
+
+    /// <summary>
+    /// Queues the 3 starter strategies for a new user. The caller saves the
+    /// context, so they are created in the same transaction as the account.
+    /// </summary>
+    public void AddStarterStrategies(string ownerId)
     {
-        lock (_lock)
-        {
-            record.Id = Guid.NewGuid().ToString("N")[..8];
-            record.RanAt = DateTime.UtcNow;
-            _backtestHistory.Add(record);
-
-            // Also mark the strategy as "Backtested"
-            var strategy = _strategies.FirstOrDefault(s => s.Id == record.StrategyId);
-            if (strategy != null)
+        _db.Strategies.AddRange(
+            new StrategyProfile
             {
-                strategy.Status = "Backtested";
-                var ret = record.TotalReturn;
-                strategy.LastMetricSummary = $"{ret:+0.0;-0.0}% return, {record.TotalTrades} trades";
-            }
-
-            return record;
-        }
-    }
-
-    // ── Seed Data ──────────────────────────────────────────
-
-    private void SeedDefaults()
-    {
-        _strategies.Add(new StrategyProfile
-        {
-            Id = "rsi-001",
-            Name = "RSI Mean Reversion",
-            Asset = "NIFTY 50",
-            Timeframe = "Daily",
-            StartDate = "2024-06-01",
-            EndDate = "2025-01-01",
-            Status = "Draft",
-            PythonCode = RsiCode,
-            ParametersSchema = new()
-            {
-                new() { Key = "rsiPeriod",      Label = "RSI Period",           Min = 5,  Max = 50, Step = 1, DocKey = "rsiPeriod" },
-                new() { Key = "buyThreshold",   Label = "Oversold Threshold",   Min = 10, Max = 45, Step = 1, DocKey = "buyThreshold" },
-                new() { Key = "sellThreshold",  Label = "Overbought Threshold", Min = 55, Max = 90, Step = 1, DocKey = "sellThreshold" },
-                new() { Key = "stopLoss",       Label = "Stop Loss (%)",        Min = 1,  Max = 20, Step = 1, DocKey = "stopLoss" },
-                new() { Key = "takeProfit",     Label = "Take Profit (%)",      Min = 5,  Max = 50, Step = 1, DocKey = "takeProfit" },
+                Id = NewId(),
+                OwnerId = ownerId,
+                Name = "RSI Mean Reversion",
+                Asset = "NIFTY 50",
+                Timeframe = "Daily",
+                StartDate = "2024-06-01",
+                EndDate = "2025-01-01",
+                Status = "Draft",
+                PythonCode = RsiCode,
+                ParametersSchema = new()
+                {
+                    new() { Key = "rsiPeriod",      Label = "RSI Period",           Min = 5,  Max = 50, Step = 1, DocKey = "rsiPeriod" },
+                    new() { Key = "buyThreshold",   Label = "Oversold Threshold",   Min = 10, Max = 45, Step = 1, DocKey = "buyThreshold" },
+                    new() { Key = "sellThreshold",  Label = "Overbought Threshold", Min = 55, Max = 90, Step = 1, DocKey = "sellThreshold" },
+                    new() { Key = "stopLoss",       Label = "Stop Loss (%)",        Min = 1,  Max = 20, Step = 1, DocKey = "stopLoss" },
+                    new() { Key = "takeProfit",     Label = "Take Profit (%)",      Min = 5,  Max = 50, Step = 1, DocKey = "takeProfit" },
+                },
+                ParameterValues = new()
+                {
+                    ["rsiPeriod"] = 14, ["buyThreshold"] = 30, ["sellThreshold"] = 70,
+                    ["stopLoss"] = 5, ["takeProfit"] = 10,
+                },
             },
-            ParameterValues = new()
+            new StrategyProfile
             {
-                ["rsiPeriod"] = 14, ["buyThreshold"] = 30, ["sellThreshold"] = 70,
-                ["stopLoss"] = 5, ["takeProfit"] = 10,
+                Id = NewId(),
+                OwnerId = ownerId,
+                Name = "Moving Average Crossover",
+                Asset = "RELIANCE",
+                Timeframe = "Daily",
+                StartDate = "2024-06-01",
+                EndDate = "2025-01-01",
+                Status = "Draft",
+                PythonCode = MacCode,
+                ParametersSchema = new()
+                {
+                    new() { Key = "fastMa",  Label = "Fast MA Period", Min = 5,  Max = 50,  Step = 1, DocKey = "fastMa" },
+                    new() { Key = "slowMa",  Label = "Slow MA Period", Min = 20, Max = 200, Step = 1, DocKey = "slowMa" },
+                },
+                ParameterValues = new()
+                {
+                    ["fastMa"] = 10, ["slowMa"] = 50,
+                },
             },
-        });
-
-        _strategies.Add(new StrategyProfile
-        {
-            Id = "mac-002",
-            Name = "Moving Average Crossover",
-            Asset = "RELIANCE",
-            Timeframe = "Daily",
-            StartDate = "2024-06-01",
-            EndDate = "2025-01-01",
-            Status = "Draft",
-            PythonCode = MacCode,
-            ParametersSchema = new()
+            new StrategyProfile
             {
-                new() { Key = "fastMa",  Label = "Fast MA Period", Min = 5,  Max = 50,  Step = 1, DocKey = "fastMa" },
-                new() { Key = "slowMa",  Label = "Slow MA Period", Min = 20, Max = 200, Step = 1, DocKey = "slowMa" },
-            },
-            ParameterValues = new()
-            {
-                ["fastMa"] = 10, ["slowMa"] = 50,
-            },
-        });
-
-        _strategies.Add(new StrategyProfile
-        {
-            Id = "brk-003",
-            Name = "Breakout Strategy",
-            Asset = "TCS",
-            Timeframe = "Daily",
-            StartDate = "2024-06-01",
-            EndDate = "2025-01-01",
-            Status = "Draft",
-            PythonCode = BrkCode,
-            ParametersSchema = new()
-            {
-                new() { Key = "lookback", Label = "Lookback Period", Min = 5, Max = 60, Step = 1, DocKey = "lookback" },
-            },
-            ParameterValues = new()
-            {
-                ["lookback"] = 20,
-            },
-        });
+                Id = NewId(),
+                OwnerId = ownerId,
+                Name = "Breakout Strategy",
+                Asset = "TCS",
+                Timeframe = "Daily",
+                StartDate = "2024-06-01",
+                EndDate = "2025-01-01",
+                Status = "Draft",
+                PythonCode = BrkCode,
+                ParametersSchema = new()
+                {
+                    new() { Key = "lookback", Label = "Lookback Period", Min = 5, Max = 60, Step = 1, DocKey = "lookback" },
+                },
+                ParameterValues = new()
+                {
+                    ["lookback"] = 20,
+                },
+            });
     }
 
     // ── Code Templates ─────────────────────────────────────

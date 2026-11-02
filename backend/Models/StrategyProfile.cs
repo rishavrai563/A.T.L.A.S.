@@ -1,12 +1,17 @@
+using System.Text.Json.Serialization;
+
 namespace AlgoTrading.Models;
 
 /// <summary>
 /// A saved strategy profile — the core entity in the platform.
-/// Initialized with 3 defaults on startup; updated via PUT /api/strategies/{id}.
+/// Each user owns their strategies; new accounts receive 3 starter templates.
+/// Updated via PUT /api/strategies/{id}.
 /// </summary>
 public class StrategyProfile
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N")[..8];
+    /// <summary>User who owns this strategy. Set server-side from the session.</summary>
+    [JsonIgnore] public string OwnerId { get; set; } = "";
     public string Name { get; set; } = "";
     public string Asset { get; set; } = "NIFTY 50";
     public string Timeframe { get; set; } = "Daily";
@@ -47,6 +52,8 @@ public class ParameterSchema
 public class BacktestRecord
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N")[..8];
+    /// <summary>User who ran this backtest. Set server-side from the session.</summary>
+    [JsonIgnore] public string OwnerId { get; set; } = "";
     public string StrategyId { get; set; } = "";
     public string StrategyName { get; set; } = "";
     public string Asset { get; set; } = "";
