@@ -7,6 +7,7 @@ A human-centered web application for building, backtesting, exploring and compar
 ## Contents
 
 - [Features](#features)
+- [Project Resources & Media](#project-resources--media)
 - [Quick start](#quick-start)
 - [Using the platform](#using-the-platform)
 - [Project structure](#project-structure)
@@ -16,6 +17,13 @@ A human-centered web application for building, backtesting, exploring and compar
 - [Build](#build)
 - [Troubleshooting](#troubleshooting)
 - [Team and disclaimer](#team-members)
+
+## Project Resources & Media
+
+| Resource | Description | Link |
+|---|---|---|
+| 📊 **Presentation Slides (PPT)** | Comprehensive slide deck detailing platform architecture, HCI principles, and system evaluation | [View on Google Drive](https://drive.google.com/file/d/1-G6PKDZBJGQoqZi3hP4dLwCLfocih4GV/view?usp=sharing) |
+| 🎥 **Demo & Presentation Videos** | Complete walkthrough, strategy creation, backtest execution, and feature demonstration | [Watch on Google Drive](https://drive.google.com/drive/folders/1pjVfvR0Qp15MTmcHHBMtoTee3liQcnQe?usp=sharing) |
 
 ## Features
 
