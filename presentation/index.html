@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A.T.L.A.S. — Project Presentation</title>
+<meta name="viewport" content="width=1366">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  @page { size: 1366px 768px; margin: 0; }
+  :root {
+    --bg: #000;
+    --ink: #f6f4ea;
+    --mute: #8c8c88;
+    --dim: #5a5a57;
+    --rule: #3a3a38;
+    --green: #2be07a;
+    --amber: #f5b53d;
+    --red: #ff5d4d;
+    --sans: 'Inter Tight', 'Helvetica Neue', Arial, sans-serif;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --wide: 'Archivo', 'Arial Black', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #111; }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+  .slide {
+    position: relative; width: 1366px; height: 768px; overflow: hidden;
+    background: var(--bg); display: none; page-break-after: always; break-after: page;
+  }
+  .slide:target { display: block; }
+  body:not(:has(.slide:target)) #s1 { display: block; }
+  @media print { .slide { display: block !important; } html, body { background: #000; } }
+
+  /* ---- header ---- */
+  .hdr { position: absolute; left: 11px; right: 11px; top: 11px; height: 44px; }
+  .hdr > * { position: absolute; top: 0; }
+  .wordmark {
+    left: 0; font-family: var(--wide); font-weight: 900; font-stretch: 125%;
+    font-size: 25px; letter-spacing: 0.005em; line-height: 20px; text-transform: uppercase;
+  }
+  .hdr .mark { left: 451px; top: -1px; width: 22px; height: 22px; }
+  .meta {
+    font-family: var(--mono); font-size: 9.5px; line-height: 12px; letter-spacing: 0.04em;
+    color: var(--mute); text-transform: uppercase; top: 1px;
+  }
+  .meta.m1 { left: 678px; } .meta.m2 { left: 1016px; }
+  .num { right: 0; top: 1px; font-family: var(--mono); font-size: 9.5px; color: var(--mute); }
+
+  /* ---- headline ---- */
+  .label { position: absolute; left: 11px; top: 84px; font-size: 12.5px; font-weight: 700; color: var(--mute); letter-spacing: -0.005em; }
+  h1 {
+    position: absolute; left: 11px; top: 100px; width: 1280px;
+    font-weight: 700; font-size: 66px; line-height: 0.98; letter-spacing: -0.047em;
+  }
+  h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.12em; letter-spacing: -0.02em; line-height: 0.8; }
+  h1 .g { color: var(--green); }
+
+  /* ---- columns ---- */
+  .cols { position: absolute; left: 11px; right: 11px; bottom: 40px; display: grid; grid-template-columns: repeat(4, 1fr); }
+  .col { position: relative; padding-right: 22px; }
+  .col h4 { font-size: 12.5px; font-weight: 700; color: var(--mute); letter-spacing: -0.005em; padding-left: 0; line-height: 15px; height: 15px; margin-bottom: 9px; white-space: nowrap; }
+  .col.ruled h4 { padding-left: 11px; }
+  .col.ruled::before { content: '+'; position: absolute; left: -4px; top: -2px; font: 400 15px/15px var(--mono); color: var(--mute); }
+  .col.ruled .body { border-left: 1px solid #7a7a76; padding-left: 11px; height: 100%; }
+  .col.ruled { height: 100%; }
+  .col p { font-size: 14.6px; line-height: 1.34; letter-spacing: -0.012em; font-weight: 400; }
+  .col p + p { margin-top: 10px; }
+  .col p b { font-weight: 600; }
+  .col p .m { color: var(--mute); }
+
+  ul.rows { list-style: none; }
+  ul.rows li { font-size: 14.6px; line-height: 1.28; letter-spacing: -0.012em; padding: 6.5px 0 7px; border-bottom: 1px solid var(--rule); color: #c9c7bd; }
+  ul.rows li:first-child { padding-top: 2px; }
+  ul.rows li b { color: var(--ink); font-weight: 600; }
+  ul.rows.big li { font-size: 21px; padding: 8px 0 9px; color: var(--ink); letter-spacing: -0.025em; }
+
+  .mono { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--mute); }
+  .ph { font-family: var(--mono); font-size: 10px; letter-spacing: 0.03em; color: var(--red); border: 1px dashed var(--red); padding: 5px 7px; display: inline-block; line-height: 1.35; }
+  .pill { display: inline-block; font: 500 9.5px/1 var(--mono); letter-spacing: 0.06em; padding: 4px 6px 3px; border: 1px solid currentColor; text-transform: uppercase; }
+  .pill.ok { color: var(--green); } .pill.part { color: var(--amber); } .pill.open { color: var(--red); }
+
+  .tgt { padding: 6px 0 8px; border-bottom: 1px solid var(--rule); position: relative; }
+  .tgt:first-child { padding-top: 2px; }
+  .tgt .k { font: 500 9.5px/12px var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--mute); }
+  .tgt .v { font-size: 24px; font-weight: 500; letter-spacing: -0.035em; line-height: 1.1; margin-top: 2px; }
+  .tgt .v small { font-size: 13px; color: var(--mute); letter-spacing: -0.01em; font-weight: 400; }
+  .tgt .st { position: absolute; right: 0; top: 14px; }
+
+  .frame { position: relative; }
+  .shot { display: block; width: 100%; border: 1px solid #2c2c2a; }
+  .cap { font: 500 9.5px/12px var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--mute); margin: 5px 0 9px; }
+
+  svg text { font-family: var(--sans); }
+  svg .mono-t { font-family: var(--mono); }
+  .foot { position: absolute; left: 11px; right: 11px; bottom: 14px; display: flex; justify-content: space-between; font: 500 9.5px/12px var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim); }
+</style>
+</head>
+<body>
+
+<!-- ============================ 01 ============================ -->
+<section class="slide" id="s1">
+  <div class="hdr">
+    <div class="wordmark">A.T.L.A.S.</div>
+    <img class="mark" src="assets/atlas-mark.svg" alt="">
+    <div class="meta m1">Algorithmic Trading<br>→ Lab &amp; Analysis System</div>
+    <div class="meta m2">AI511 · HCI &amp; Vis<br>IIT Ropar · 2026</div>
+    <div class="num">01</div>
+  </div>
+
+  <div class="label">Introduction, Objectives &amp; Contributions</div>
+  <h1>A visual workbench to build, test and <em>understand</em> algorithmic trading strategies.</h1>
+
+  <div class="cols" style="top:318px">
+    <div class="col">
+      <h4>Introduction</h4>
+      <p><b>ATLAS</b> — Algorithmic Trading Lab and Analysis System — is a human-centered web app on top of the QuantConnect LEAN engine.</p>
+      <p>One connected flow replaces scattered tools: <span class="m">Create → Configure → Backtest → Explore → Compare → Understand.</span></p>
+      <p class="m" style="margin-top:14px">Course project, AI511 – HCI &amp; Visualization, School of AI &amp; Data Engineering, IIT Ropar.</p>
+      <p style="margin-top:14px"><span class="mono">Code</span><br><span style="font:500 12.5px var(--mono);letter-spacing:-0.02em">github.com/rishavrai563/A.T.L.A.S.</span></p>
+    </div>
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Objectives</h4>
+        <ul class="rows">
+          <li>Make strategy creation easy — <b>Python or visual blocks</b></li>
+          <li>Make backtests simple to configure, with <b>clear progress</b></li>
+          <li>Show <b>how parameter changes</b> move the results</li>
+          <li>Compare runs <b>with their configuration</b> in view</li>
+          <li>Cut avoidable errors; improve <b>accessibility</b> from user testing</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Rishav Kumar <span style="color:var(--dim);font-weight:500">· 2024AIB1014</span></h4>
+        <ul class="rows">
+          <li><b>Backend &amp; engine</b> — ASP.NET Core API, LEAN Docker runner, result parser, async job manager</li>
+          <li><b>Data</b> — market-data pipeline (Yahoo/Upstox → CSV), dynamic parameter injection</li>
+          <li><b>Workflow UI</b> — Strategy Builder, Parameters, live backtest progress</li>
+          <li><b>Usability fixes</b> — DocTooltip glossary, Reset confirmation, API docs, user-flow diagram</li>
+        </ul>
+        <div class="mono" style="margin-top:9px">55 commits</div>
+      </div>
+    </div>
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Ravikant Sharma <span style="color:var(--dim);font-weight:500">· 2024AIB1013</span></h4>
+        <ul class="rows">
+          <li><b>Frontend foundation</b> — React app shell, navigation and layout</li>
+          <li><b>Accounts &amp; profile</b> — login UI, user profile and portfolio page</li>
+          <li><b>Theming</b> — light/dark toggle; dark styling for Compare, Parameters, Profile</li>
+          <li><b>Documentation</b> — README, setup, architecture, tech stack, user flow</li>
+        </ul>
+        <div class="mono" style="margin-top:9px">23 commits</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Shared: Labs 4–9 reports · user testing &amp; heuristic evaluation · design decisions</span><span>Contributions per git history</span></div>
+</section>
+
+<!-- ============================ 02 ============================ -->
+<section class="slide" id="s2">
+  <div class="hdr">
+    <div class="wordmark">A.T.L.A.S.</div>
+    <img class="mark" src="assets/atlas-mark.svg" alt="">
+    <div class="meta m1">Algorithmic Trading<br>→ Lab &amp; Analysis System</div>
+    <div class="meta m2">AI511 · HCI &amp; Vis<br>IIT Ropar · 2026</div>
+    <div class="num">02</div>
+  </div>
+
+  <div class="label">Goals</div>
+  <h1>Trading tools help you run strategies — not <em>understand</em> them.</h1>
+
+  <div class="cols" style="top:318px">
+    <div class="col">
+      <h4>Problem Statement</h4>
+      <p>Algorithmic trading platforms are powerful, but users juggle <b>code, charts, parameters and metrics</b> across disconnected screens.</p>
+      <p>The result: people can <b>run</b> a backtest, yet struggle to see <b>why</b> a result changed or which configuration produced it.</p>
+      <p class="m" style="margin-top:14px">Our Lab 7 study confirmed it — a gap between performing an action and understanding its consequences.</p>
+    </div>
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Gaps in existing tools</h4>
+        <ul class="rows">
+          <li><b>Gulf of execution</b> — TradingView strategies need Pine Script, so intent must be translated into code</li>
+          <li><b>Cognitive load</b> — QuantConnect spans research, coding, backtesting and analysis stages</li>
+          <li><b>Exploration</b> — changing logic means re-editing code; comparing variants is effortful</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Design goals</h4>
+        <ul class="rows big">
+          <li>Interactive strategy building</li>
+          <li>Visual exploration</li>
+          <li>Informed comparison</li>
+          <li>Understanding, in place</li>
+        </ul>
+        <p class="m" style="margin-top:12px;font-size:13px">Personas: beginner trader · quant student · quant researcher · strategy analyst.</p>
+      </div>
+    </div>
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Success targets <span style="color:var(--dim);font-weight:500">· fixed before testing</span></h4>
+        <div class="tgt"><div class="k">SC1 · Independent completion</div><div class="v">≥ 4 of 5 <small>users, per task</small></div></div>
+        <div class="tgt"><div class="k">SC2 · Completion time</div><div class="v">≤ 240 s <small>T1</small> · ≤ 300 s <small>T2</small></div></div>
+        <div class="tgt"><div class="k">SC3 · Errors</div><div class="v">≤ 1.0 <small>mean per task</small></div></div>
+        <div class="tgt"><div class="k">SC4 · Understanding</div><div class="v">≥ 4.0 / 5 <small>questionnaire mean</small></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>T1 Strategy creation &amp; backtesting · T2 Exploration &amp; comparison</span><span>Sources: Lab 4, Lab 5, Lab 9</span></div>
+</section>
+
+<!-- ============================ 03 ============================ -->
+<section class="slide" id="s3">
+  <div class="hdr">
+    <div class="wordmark">A.T.L.A.S.</div>
+    <img class="mark" src="assets/atlas-mark.svg" alt="">
+    <div class="meta m1">Algorithmic Trading<br>→ Lab &amp; Analysis System</div>
+    <div class="meta m2">AI511 · HCI &amp; Vis<br>IIT Ropar · 2026</div>
+    <div class="num">03</div>
+  </div>
+
+  <div class="label">Methodology &amp; Technical Implementation</div>
+  <h1>User research first, then a <em>full-stack</em> build on the LEAN engine.</h1>
+
+  <div class="cols" style="top:300px">
+    <div class="col">
+      <h4>Methodology</h4>
+      <ul class="rows">
+        <li><span class="mono">Lab 4</span><br><b>Study</b> TradingView &amp; QuantConnect; find HCI gaps</li>
+        <li><span class="mono">Lab 5</span><br><b>Design</b> personas, key tasks, low-fi screens, user flow</li>
+        <li><span class="mono">Lab 7</span><br><b>Evaluate</b> 5 users + heuristics + accessibility</li>
+        <li><span class="mono">Lab 8</span><br><b>Improve</b> tooltips, Compare table, Reset modal, Monaco, contrast</li>
+        <li><span class="mono">Lab 9</span><br><b>Validate</b> 5 new users against pre-set targets</li>
+      </ul>
+    </div>
+
+    <div class="col ruled" style="grid-column: span 2; padding-right: 22px;">
+      <div class="body">
+        <h4 style="padding-left:0">System architecture</h4>
+        <svg viewBox="-14 0 700 372" width="100%" style="display:block;margin-top:2px">
+          <defs>
+            <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#2be07a"/></marker>
+          </defs>
+          <g fill="none" stroke="#6e6e6a" stroke-width="1">
+            <rect x="0" y="14" width="196" height="96"/>
+            <rect x="241" y="14" width="196" height="96"/>
+            <rect x="482" y="14" width="196" height="96"/>
+            <rect x="0" y="184" width="150" height="98"/>
+            <rect x="176" y="184" width="150" height="98"/>
+            <rect x="352" y="184" width="150" height="98"/>
+            <rect x="528" y="184" width="150" height="98"/>
+          </g>
+          <g fill="#f6f4ea" font-size="15" font-weight="600" letter-spacing="-0.4">
+            <text x="12" y="62">React UI</text>
+            <text x="253" y="62">ASP.NET Core API</text>
+            <text x="494" y="62">SQLite</text>
+            <text x="12" y="232">Market data</text>
+            <text x="188" y="232">LEAN engine</text>
+            <text x="364" y="232">Result parser</text>
+            <text x="540" y="232">Metrics</text>
+          </g>
+          <g fill="#8c8c88" font-size="11.5" letter-spacing="-0.1">
+            <text x="12" y="80">React 19 · Vite · Router</text>
+            <text x="12" y="96">Monaco · lightweight-charts</text>
+            <text x="253" y="80">.NET 8 · C# · REST</text>
+            <text x="253" y="96">Auth · Strategies · Backtest</text>
+            <text x="494" y="80">EF Core · atlas.db</text>
+            <text x="494" y="96">users · strategies · history</text>
+            <text x="12" y="250">Yahoo / Upstox → validated</text>
+            <text x="12" y="266">CSV in lean_workspace</text>
+            <text x="188" y="250">Docker · quantconnect/lean</text>
+            <text x="188" y="266">Python QCAlgorithm</text>
+            <text x="364" y="250">LeanResultParser reads</text>
+            <text x="364" y="266">LEAN JSON output</text>
+            <text x="540" y="250">return · drawdown</text>
+            <text x="540" y="266">trades · equity curve</text>
+          </g>
+          <g class="mono-t" fill="#8c8c88" font-size="9" letter-spacing="0.6">
+            <text x="12" y="34">01 · BROWSER</text>
+            <text x="253" y="34">02 · SERVER</text>
+            <text x="494" y="34">03 · STORE</text>
+            <text x="12" y="204">04</text><text x="188" y="204">05</text><text x="364" y="204">06</text><text x="540" y="204">07</text>
+            <text x="0" y="304" fill="#2be07a">BACKTEST PIPELINE · BacktestService + JobManager run it as an async, pollable job</text>
+          </g>
+          <g fill="none" stroke="#2be07a" stroke-width="1.2" marker-end="url(#ah)">
+            <path d="M196 62 H238"/>
+            <path d="M437 62 H479"/>
+            <path d="M339 110 V142 H75 V181"/>
+            <path d="M150 233 H173"/><path d="M326 233 H349"/><path d="M502 233 H525"/>
+            <path d="M603 282 V330 H-8 V62 H-3" stroke-dasharray="4 3"/>
+          </g>
+          <g class="mono-t" fill="#8c8c88" font-size="9" letter-spacing="0.5">
+            <text x="86" y="138">POST /api/backtest</text>
+            <text x="20" y="347">GET /api/backtest/{jobId}/status — poll, then render results</text>
+          </g>
+        </svg>
+        <div class="mono" style="margin-top:-4px">≈10.7k lines · 78 commits · bearer-token auth · salted PBKDF2 · dark/light theme</div>
+      </div>
+    </div>
+
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">The workbench</h4>
+        <div class="frame"><img class="shot" src="assets/ui-parameters.png" alt="ATLAS Strategy Parameters page"></div>
+        <div class="cap">02 · Parameters — sliders + compiled rules</div>
+        <div class="frame"><img class="shot" src="assets/ui-results.png" alt="ATLAS Backtest Results page"></div>
+        <div class="cap">03 · Results — metrics, chart, trades</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Frontend React 19 + Vite · Backend ASP.NET Core 8 · Engine QuantConnect LEAN (Docker)</span><span>Sources: README, Documentation/, Lab 4–9</span></div>
+</section>
+
+<!-- ============================ 04 ============================ -->
+<section class="slide" id="s4">
+  <div class="hdr">
+    <div class="wordmark">A.T.L.A.S.</div>
+    <img class="mark" src="assets/atlas-mark.svg" alt="">
+    <div class="meta m1">Algorithmic Trading<br>→ Lab &amp; Analysis System</div>
+    <div class="meta m2">AI511 · HCI &amp; Vis<br>IIT Ropar · 2026</div>
+    <div class="num">04</div>
+  </div>
+
+  <div class="label">Results &amp; Evaluation</div>
+  <h1>All four targets <em class="g">met</em> — understanding rose from 4.0 to <em>4.52 / 5</em>.</h1>
+
+  <div class="cols" style="top:300px">
+    <div class="col ruled" style="grid-column: span 2;">
+      <div class="body">
+        <h4 style="padding-left:0">Questionnaire · Lab 7 vs Lab 9 <span style="color:var(--dim);font-weight:500">· mean rating, 1–5</span></h4>
+        <svg viewBox="0 0 676 400" width="100%" style="display:block;margin-top:6px">
+<g stroke="#2e2e2c" stroke-width="1"><line x1="200" y1="28" x2="200" y2="300"/><line x1="310.0" y1="28" x2="310.0" y2="300"/><line x1="530.0" y1="28" x2="530.0" y2="300"/><line x1="640" y1="28" x2="640" y2="300"/></g>
+<line x1="420" y1="22" x2="420" y2="300" stroke="#8c8c88" stroke-dasharray="3 3"/>
+<text class="mono-t" x="424" y="16" fill="#8c8c88" font-size="9" letter-spacing="0.6">TARGET ≥ 4.0</text>
+<text x="0" y="55" font-size="14" fill="#f6f4ea" letter-spacing="-0.2">Strategy behaviour</text>
+<text class="mono-t" x="0" y="69" font-size="9" fill="#8c8c88" letter-spacing="0.6">Q1</text>
+<line x1="376.0" y1="50" x2="508.00000000000006" y2="50" stroke="#2be07a" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="376.0" cy="50" r="6.5" fill="#000" stroke="#8c8c88" stroke-width="2"/>
+<circle cx="508.00000000000006" cy="50" r="7" fill="#2be07a"/>
+<text x="676" y="55" font-size="15" font-weight="600" fill="#2be07a" text-anchor="end" letter-spacing="-0.3">+0.6</text>
+<text x="0" y="109" font-size="14" fill="#f6f4ea" letter-spacing="-0.2">Parameters</text>
+<text class="mono-t" x="0" y="123" font-size="9" fill="#8c8c88" letter-spacing="0.6">Q2</text>
+<line x1="464.00000000000006" y1="104" x2="552.0" y2="104" stroke="#2be07a" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="464.00000000000006" cy="104" r="6.5" fill="#000" stroke="#8c8c88" stroke-width="2"/>
+<circle cx="552.0" cy="104" r="7" fill="#2be07a"/>
+<text x="676" y="109" font-size="15" font-weight="600" fill="#2be07a" text-anchor="end" letter-spacing="-0.3">+0.4</text>
+<text x="0" y="163" font-size="14" fill="#f6f4ea" letter-spacing="-0.2">Backtest status</text>
+<text class="mono-t" x="0" y="177" font-size="9" fill="#8c8c88" letter-spacing="0.6">Q3</text>
+<circle cx="596.0" cy="158" r="12" fill="none" stroke="#8c8c88" stroke-width="2"/>
+<circle cx="596.0" cy="158" r="7" fill="#2be07a"/>
+<text x="676" y="163" font-size="15" font-weight="600" fill="#8c8c88" text-anchor="end" letter-spacing="-0.3">0.0</text>
+<text x="0" y="217" font-size="14" fill="#f6f4ea" letter-spacing="-0.2">Performance</text>
+<text class="mono-t" x="0" y="231" font-size="9" fill="#8c8c88" letter-spacing="0.6">Q4</text>
+<line x1="420.0" y1="212" x2="508.00000000000006" y2="212" stroke="#2be07a" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="420.0" cy="212" r="6.5" fill="#000" stroke="#8c8c88" stroke-width="2"/>
+<circle cx="508.00000000000006" cy="212" r="7" fill="#2be07a"/>
+<text x="676" y="217" font-size="15" font-weight="600" fill="#2be07a" text-anchor="end" letter-spacing="-0.3">+0.4</text>
+<text x="0" y="271" font-size="14" fill="#f6f4ea" letter-spacing="-0.2">Parameter effects</text>
+<text class="mono-t" x="0" y="285" font-size="9" fill="#8c8c88" letter-spacing="0.6">Q5</text>
+<line x1="244.00000000000006" y1="266" x2="508.00000000000006" y2="266" stroke="#2be07a" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="244.00000000000006" cy="266" r="6.5" fill="#000" stroke="#8c8c88" stroke-width="2"/>
+<circle cx="508.00000000000006" cy="266" r="7" fill="#2be07a"/>
+<text x="676" y="271" font-size="15" font-weight="600" fill="#2be07a" text-anchor="end" letter-spacing="-0.3">+1.2</text>
+<line x1="0" y1="304" x2="676" y2="304" stroke="#7a7a76"/>
+<text x="0" y="343" font-size="15" font-weight="700" fill="#f6f4ea" letter-spacing="-0.3">Overall mean</text>
+<line x1="420.0" y1="338" x2="534.3999999999999" y2="338" stroke="#2be07a" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="420.0" cy="338" r="6.5" fill="#000" stroke="#8c8c88" stroke-width="2"/><circle cx="534.3999999999999" cy="338" r="7" fill="#2be07a"/>
+<text x="676" y="343" font-size="15" font-weight="700" fill="#2be07a" text-anchor="end" letter-spacing="-0.3">+0.52</text>
+<g class="mono-t" font-size="9" fill="#5a5a57" letter-spacing="0.5" text-anchor="middle"><text x="200" y="384">3.0</text><text x="310.0" y="384">3.5</text><text x="420" y="384">4.0</text><text x="530.0" y="384">4.5</text><text x="640" y="384">5.0</text></g>
+<circle cx="6" cy="380" r="5" fill="#000" stroke="#8c8c88" stroke-width="2"/><text x="17" y="384" font-size="11" fill="#8c8c88">Lab 7</text>
+<circle cx="76" cy="380" r="5.5" fill="#2be07a"/><text x="87" y="384" font-size="11" fill="#8c8c88">Lab 9</text>
+</svg>
+      </div>
+    </div>
+
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Targets vs. results <span style="color:var(--dim);font-weight:500">· N = 5 new users</span></h4>
+        <div class="tgt"><div class="k">SC1 · Independent completion</div><div class="v">4/5 <small>T1</small> · 5/5 <small>T2</small></div><span class="pill ok st">Met</span></div>
+        <div class="tgt"><div class="k">SC2 · Mean time</div><div class="v">202 s <small>T1</small> · 248 s <small>T2</small></div><span class="pill ok st">Met</span></div>
+        <div class="tgt"><div class="k">SC3 · Mean errors</div><div class="v">0.6 <small>T1</small> · 0.6 <small>T2</small></div><span class="pill ok st">Met</span></div>
+        <div class="tgt"><div class="k">SC4 · Understanding</div><div class="v">4.52 / 5 <small>(25 ratings)</small></div><span class="pill ok st">Met</span></div>
+      </div>
+    </div>
+
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Lab 7 issues re-checked</h4>
+        <ul class="rows">
+          <li style="display:flex;justify-content:space-between;gap:8px"><span><b>Fixed</b> — parameters reach LEAN, Compare config table, Reset confirm, tooltips, Monaco editor, Estimated label, contrast, text size</span><span class="pill ok" style="align-self:flex-start">8</span></li>
+          <li style="display:flex;justify-content:space-between;gap:8px"><span><b>Partly</b> — accessible labels</span><span class="pill part">1</span></li>
+          <li style="display:flex;justify-content:space-between;gap:8px"><span><b>Open</b> — trade rows not keyboard-operable</span><span class="pill open">1</span></li>
+        </ul>
+        <p class="m" style="font-size:12px;line-height:1.3;margin-top:10px">Largest gain: parameter effects (Q5) +1.2. Two different user groups — a descriptive comparison, not proof of cause. Status per the Lab 9 implementation guide.</p>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+          <span class="ph">[PLACEHOLDER] Lighthouse accessibility score</span>
+          <span class="ph">[PLACEHOLDER] Testing date &amp; build commit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>T1 Strategy creation &amp; backtesting · T2 Exploration · SC = success criterion</span><span>Source: Lab 9 report (Tables 3–6, 9)</span></div>
+</section>
+
+<!-- ============================ 05 ============================ -->
+<section class="slide" id="s5">
+  <div class="hdr">
+    <div class="wordmark">A.T.L.A.S.</div>
+    <img class="mark" src="assets/atlas-mark.svg" alt="">
+    <div class="meta m1">Algorithmic Trading<br>→ Lab &amp; Analysis System</div>
+    <div class="meta m2">AI511 · HCI &amp; Vis<br>IIT Ropar · 2026</div>
+    <div class="num">05</div>
+  </div>
+
+  <div class="label">Findings, Insights &amp; Key Learnings</div>
+  <h1>Closing the gap between <em>doing</em> and understanding.</h1>
+
+  <div class="cols" style="top:300px">
+    <div class="col">
+      <h4>What worked</h4>
+      <ul class="rows">
+        <li><b>Side-by-side Compare</b> with a “Changed?” highlight — Q5 up 3.2 → 4.4 <span style="color:var(--mute)">(N02, N01)</span></li>
+        <li><b>In-place tooltips</b> for RSI, Sharpe, Drawdown reassured novices <span style="color:var(--mute)">(N01, N04)</span></li>
+        <li><b>Reset confirmation</b> protected configuration <span style="color:var(--mute)">(N04)</span></li>
+        <li><b>Date validation</b> caught an inverted range <span style="color:var(--mute)">(N03)</span></li>
+      </ul>
+    </div>
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Insights &amp; limits</h4>
+        <ul class="rows">
+          <li><b>Run Backtest</b> was easy to miss — N04 needed a hint after 65 s</li>
+          <li><b>Compare</b> was hard to find — N01 first edited parameters in the builder</li>
+          <li><b>Trade table</b> — N03 tried arrow keys before using the mouse</li>
+          <li><b>Scope</b> — 5 users, different from Lab 7; 5 custom questions, not SUS</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Key learnings</h4>
+        <ul class="rows">
+          <li><b>Recognition over recall</b> — show the configuration next to every result</li>
+          <li><b>Explain jargon in place</b>, not in a separate manual</li>
+          <li><b>Guard destructive actions</b>; validate inputs before they run</li>
+          <li><b>Finishing a task ≠ accessible</b> — test keyboard use, not only success</li>
+          <li><b>Pre-set targets</b> keep the evaluation honest</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col ruled">
+      <div class="body">
+        <h4 style="padding-left:0">Next steps</h4>
+        <ul class="rows">
+          <li>Make <b>Run Backtest</b> more prominent</li>
+          <li>Keyboard-operable <b>trade table</b> and chart markers <span class="pill part" style="margin-left:4px">built, re-test</span></li>
+          <li>Audit <b>accessible names</b> on every page</li>
+          <li>Measure <b>contrast</b> in light and dark themes</li>
+          <li>Verify <b>parameter propagation</b> to LEAN end to end</li>
+        </ul>
+        <div style="margin-top:12px"><span class="ph">[PLACEHOLDER] Live demo / Q&amp;A slot</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Rishav Kumar · Ravikant Sharma — AI511 HCI &amp; Visualization, IIT Ropar</span><span>github.com/rishavrai563/A.T.L.A.S.</span></div>
+</section>
+
+</body>
+</html>
